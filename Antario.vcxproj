@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{1B8103F7-F793-47B0-9FBE-44EC66BC319D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Antario</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>cheat</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</IntDir>
+    <ExecutablePath>$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);$(ExecutablePath);$(DXSDK_DIR)Utilities\bin\x86</ExecutablePath>
+    <IncludePath>C:\Users\magom\Desktop\Mysterious.cc\src\detour;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\magom\Desktop\Mysterious.cc\src\detour;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Users\magom\source\repos\vro\detour;C:\Program Files %28x86%29\Microsoft DirectX SDK %28August 2009%29\Lib\x86;D:\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(LibraryPath);$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <TargetName>cheat</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</IntDir>
+    <ExecutablePath>$(VC_ExecutablePath_x86);$(WindowsSDK_ExecutablePath);$(VS_ExecutablePath);$(MSBuild_ExecutablePath);$(SystemRoot)\SysWow64;$(FxCopDir);$(PATH);$(ExecutablePath);$(DXSDK_DIR)Utilities\bin\x86</ExecutablePath>
+    <IncludePath>C:\Users\magom\Desktop\Mysterious.cc\src\detour;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\magom\Desktop\Mysterious.cc\src\detour;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;cringe</LibraryPath>
+    <TargetName>cheat</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;ANTARIO_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;ANTARIO_EXPORTS;_WINDOWS;_USRDLL;@danking;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>crine@danking %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalOptions>/SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="SDK\Convars.cpp" />
+    <ClCompile Include="SDK\Features\antiaim\antiaim.cpp" />
+    <ClCompile Include="SDK\Features\lagcomp\lagcomp.cpp" />
+    <ClCompile Include="SDK\Features\engine prediction\engine prediction.cpp" />
+    <ClCompile Include="SDK\Features\misc\misc.cpp" />
+    <ClCompile Include="SDK\Features\ragebot\ragebot.cpp" />
+    <ClCompile Include="SDK\Features\visuals\chams.cpp" />
+    <ClCompile Include="SDK\GUI\ImGUI\dx9\imgui_dx9.cpp" />
+    <ClCompile Include="SDK\GUI\ImGUI\imgui.cpp" />
+    <ClCompile Include="SDK\GUI\ImGUI\imgui_draw.cpp" />
+    <ClCompile Include="SDK\Hooks.cpp" />
+    <ClCompile Include="SDK\DLLMain.cpp" />
+    <ClCompile Include="SDK\Menu.cpp" />
+    <ClCompile Include="SDK\Utils\D3DFont.cpp" />
+    <ClCompile Include="SDK\Utils\DrawManager.cpp" />
+    <ClCompile Include="SDK\Utils\GlobalVars.cpp" />
+    <ClCompile Include="SDK\Utils\Interfaces.cpp" />
+    <ClCompile Include="SDK\Utils\Math.cpp" />
+    <ClCompile Include="SDK\Utils\NetvarManager.cpp" />
+    <ClCompile Include="SDK\Features\visuals\visuals.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="detour\detours.h" />
+    <ClInclude Include="SDK\Convars.h" />
+    <ClInclude Include="SDK\Features\antiaim\antiaim.h" />
+    <ClInclude Include="SDK\Features\lagcomp\lagcomp.h" />
+    <ClInclude Include="SDK\Features\engine prediction\engine prediction.h" />
+    <ClInclude Include="SDK\Features\misc\misc.h" />
+    <ClInclude Include="SDK\Features\ragebot\ragebot.h" />
+    <ClInclude Include="SDK\Features\visuals\chams.h" />
+    <ClInclude Include="SDK\GUI\ImGUI\dx9\imgui_dx9.h" />
+    <ClInclude Include="SDK\GUI\ImGUI\imconfig.h" />
+    <ClInclude Include="SDK\GUI\ImGUI\imgui.h" />
+    <ClInclude Include="SDK\GUI\ImGUI\imgui_internal.h" />
+    <ClInclude Include="SDK\GUI\ImGUI\stb_rect_pack.h" />
+    <ClInclude Include="SDK\GUI\ImGUI\stb_textedit.h" />
+    <ClInclude Include="SDK\GUI\ImGUI\stb_truetype.h" />
+    <ClInclude Include="SDK\Hooks.h" />
+    <ClInclude Include="Antario\Menu.h" />
+    <ClInclude Include="SDK\Menu.h" />
+    <ClInclude Include="SDK\SDK\CBaseCombatWeapon.h" />
+    <ClInclude Include="SDK\SDK\CCSGOAnimationState.h" />
+    <ClInclude Include="SDK\SDK\CGlobalVarsBase.h" />
+    <ClInclude Include="SDK\SDK\CHandle.h" />
+    <ClInclude Include="SDK\SDK\CBaseEntity.h" />
+    <ClInclude Include="SDK\SDK\CInput.h" />
+    <ClInclude Include="SDK\SDK\ClientClass.h" />
+    <ClInclude Include="SDK\SDK\DebugOverlay.h" />
+    <ClInclude Include="SDK\SDK\IAppSystem.h" />
+    <ClInclude Include="SDK\SDK\ICVar.h" />
+    <ClInclude Include="SDK\SDK\IEngineTrace.h" />
+    <ClInclude Include="SDK\SDK\IMaterialSystem.h" />
+    <ClInclude Include="SDK\SDK\IPanel.h" />
+    <ClInclude Include="SDK\SDK\IPhysics.h" />
+    <ClInclude Include="SDK\SDK\IRenderView.h" />
+    <ClInclude Include="SDK\SDK\ISurface.h" />
+    <ClInclude Include="SDK\SDK\IVModelInfoClient.h" />
+    <ClInclude Include="SDK\SDK\IVModelRender.h" />
+    <ClInclude Include="SDK\SDK\IWeaponSystem.h" />
+    <ClInclude Include="SDK\SDK\Studio.h" />
+    <ClInclude Include="SDK\Utils\Color.h" />
+    <ClInclude Include="SDK\SDK\CPrediction.h" />
+    <ClInclude Include="SDK\SDK\Definitions.h" />
+    <ClInclude Include="SDK\SDK\IBaseClientDll.h" />
+    <ClInclude Include="SDK\SDK\IClientEntity.h" />
+    <ClInclude Include="SDK\SDK\IClientEntityList.h" />
+    <ClInclude Include="SDK\SDK\IClientMode.h" />
+    <ClInclude Include="SDK\SDK\IClientNetworkable.h" />
+    <ClInclude Include="SDK\SDK\IClientRenderable.h" />
+    <ClInclude Include="SDK\SDK\IClientThinkable.h" />
+    <ClInclude Include="SDK\SDK\IClientUnknown.h" />
+    <ClInclude Include="SDK\SDK\IGameEvent.h" />
+    <ClInclude Include="SDK\SDK\IVEngineClient.h" />
+    <ClInclude Include="SDK\SDK\KeyValues.h" />
+    <ClInclude Include="SDK\SDK\PlayerInfo.h" />
+    <ClInclude Include="SDK\Settings.h" />
+    <ClInclude Include="SDK\Utils\D3DFont.h" />
+    <ClInclude Include="SDK\Utils\DrawManager.h" />
+    <ClInclude Include="SDK\Utils\GlobalVars.h" />
+    <ClInclude Include="SDK\Utils\Interfaces.h" />
+    <ClInclude Include="SDK\SDK\Recv.h" />
+    <ClInclude Include="SDK\SDK\Vector.h" />
+    <ClInclude Include="SDK\SDK\VMatrix.h" />
+    <ClInclude Include="SDK\Utils\Math.h" />
+    <ClInclude Include="SDK\Utils\NetvarManager.h" />
+    <ClInclude Include="SDK\Utils\SPoint.h" />
+    <ClInclude Include="SDK\Utils\SRect.h" />
+    <ClInclude Include="SDK\Utils\Utils.h" />
+    <ClInclude Include="SDK\Features\visuals\visuals.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="detour\detours.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="detour\detours.pdb" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
