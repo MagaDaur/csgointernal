@@ -363,3 +363,31 @@ void CMath::AngleMatrix(const QAngle& angles, const Vector& position, matrix3x4_
 	AngleMatrix(angles, matrix);
 	MatrixSetColumn(position, 3, matrix);
 }
+
+float CMath::Lerp(float start, float end, float speed = .5f)
+{
+	return start + (start - end) * speed;
+}
+
+QAngle CMath::VectorToAngle(Vector vec)
+{
+	QAngle ret;
+	VectorAngles(vec, ret);
+	return ret;
+}
+
+Vector CMath::AngleToVector(QAngle ang)
+{
+	Vector ret;
+	AngleVectors(ang, ret);
+	return ret;
+}
+
+template<typename t> t CMath::Clamp(t val, t min, t max)
+{
+	if(val < min)
+		return min;
+	else if(val > max)
+		return max;
+	return val;
+}

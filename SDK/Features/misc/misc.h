@@ -1,6 +1,6 @@
-#include "..\\..\\SDK\CBaseEntity.h"
-#include "..\\..\\SDK\CInput.h"
-
+#include "CInput.h"
+class CBaseEntity;
+class CUserCmd;
 class CMisc
 {
 public:
@@ -8,6 +8,7 @@ public:
 private:
 	void Bhop(CBaseEntity*, CUserCmd*);
 	void FakeLag(CBaseEntity*, CUserCmd*);
+	void AutoStrafe(CBaseEntity*, CUserCmd*);
 
 	bool bFakelagState;
 	int iChokedPackets;

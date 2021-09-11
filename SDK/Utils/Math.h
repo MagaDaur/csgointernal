@@ -2,7 +2,7 @@
 #include <vector>
 #include <array>
 #include "SPoint.h"
-#include "..\SDK\Vector.h"
+#include "Vector.h"
 #include "..\SDK\VMatrix.h"
 #include "..\SDK\IVEngineClient.h"
 #include "..\\SDK\CGlobalVarsBase.h"
@@ -16,11 +16,13 @@ public:
 	void NormalizeVector(Vector& vec);
 	float NormalizeFloat(float angle);
 	void ClampAngles(QAngle& angles);
+	Vector CrossProduct(const Vector& a, const Vector& b);
+private:
 	void AngleVectors(const QAngle& angles, Vector& forward);
 	void AngleVectors(const QAngle& angles, Vector& forward, Vector& right, Vector& up);
 	void VectorAngles(const Vector& forward, QAngle& angles);
-	Vector CrossProduct(const Vector& a, const Vector& b);
 	void VectorAngles(const Vector& forward, Vector& up, QAngle& angles);
+public:
 	bool screen_transform(const Vector& in, Vector& out);
 	bool WorldToScreen(const Vector& in, Vector& out);
 	void SinCos(float a, float* s, float* c);
@@ -38,6 +40,10 @@ public:
 	void MatrixCopy(const matrix3x4_t& source, matrix3x4_t& target);
 	float DotProduct(float* v1, float* v2);
 	float DotProduct(Vector v1, Vector v2);
+	float Lerp(float start, float end, float speed = .5f);
+	QAngle VectorToAngle(Vector);
+	Vector AngleToVector(QAngle);
+	template<typename t> t Clamp(t, t, t);
 };
 
 extern CMath Math;
