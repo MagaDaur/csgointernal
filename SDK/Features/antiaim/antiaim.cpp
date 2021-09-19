@@ -19,7 +19,10 @@ void CAntiAim::OnPrediction(CUserCmd* cmd, bool* bSendPackets)
 	if(g_Settings.AntiAimEnable)
 	{
 		auto movetype = pLocalPlayer->GetMoveType();
-		if(movetype != MOVETYPE_LADDER && movetype != MOVETYPE_NOCLIP && (cmd->buttons & IN_ATTACK) == 0 && (cmd->buttons & IN_USE) == 0)
+		if(movetype != MOVETYPE_LADDER && 
+			movetype != MOVETYPE_NOCLIP &&
+			(cmd->buttons & IN_ATTACK) == 0 &&
+			(cmd->buttons & IN_USE) == 0)
 		{
 			Pitch();
 			Yaw();
@@ -95,15 +98,15 @@ bool CAntiAim::LowerBodyYawUpdate()
 	else
 	{
 		flLowerbodyTimer = g_pGlobalVars->curtime + 0.22f;
+		return false;
 	}
-	return false;
 }
 
 void CAntiAim::CorrectMovement()
 {
 	float deltaView = Math.NormalizeFloat(pCmd->viewangles.y - angOriginal.y);
-	pCmd->forwardmove = cos(DEG2RAD(deltaView)) * vecMove.x + cos(DEG2RAD(deltaView + 90.f)) * vecMove.y;
-	pCmd->sidemove = sin(DEG2RAD(deltaView)) * vecMove.x + sin(DEG2RAD(deltaView + 90.f)) * vecMove.y;
+	pCmd->forwardmove = std::clamp(cos(DEG2RAD(deltaView)) * vecMove.x + cos(DEG2RAD(deltaView + 90.f)) * vecMove.y, -450.f, 450.f);
+	pCmd->sidemove = std::clamp(sin(DEG2RAD(deltaView)) * vecMove.x + sin(DEG2RAD(deltaView + 90.f)) * vecMove.y, -450.f, 450.f);
 	pCmd->buttons &= ~IN_FORWARD;
 	pCmd->buttons &= ~IN_BACK;
 	pCmd->buttons &= ~IN_MOVELEFT;

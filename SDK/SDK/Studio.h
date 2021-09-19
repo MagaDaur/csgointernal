@@ -2,7 +2,6 @@
 
 #include "Vector.h"
 #include "VMatrix.h"
-#include"ICVar.h"
 
 typedef float Quaternion[4];
 typedef float RadianEuler[3];

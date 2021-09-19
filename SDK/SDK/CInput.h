@@ -105,14 +105,16 @@ public:
     char                pad_0xE4[0x8];                //0xE4
     CUserCmd* m_pCommands;                  //0xEC
     CVerifiedUserCmd* m_pVerifiedCommands;          //0xF0
-    inline CUserCmd* GetUserCmd(int nSlot, int sequence_number);
+	virtual		void		Init_All(void) = 0;
+	virtual		void		Shutdown_All(void) = 0;
+	virtual		int			GetButtonBits(int) = 0;
+	virtual		void		CreateMove(int sequence_number, float input_sample_frametime, bool active) = 0;
+	virtual		void		ExtraMouseSample(float frametime, bool active) = 0;
+	virtual		bool		WriteUsercmdDeltaToBuffer(bf_write* buf, int from, int to, bool isnewcommand) = 0;
+	virtual		void		EncodeUserCmdToBuffer(bf_write& buf, int slot) = 0;
+	virtual		void		DecodeUserCmdFromBuffer(bf_read& buf, int slot) = 0;
+    virtual CUserCmd* GetUserCmd(int nSlot, int sequence_number) = 0;
 };
-
-inline CUserCmd* CInput::GetUserCmd(int nSlot, int sequence_number)
-{
-    typedef CUserCmd* (__thiscall* GetUserCmd_t) (void*, int, int);
-    return Utils::GetVFunc <GetUserCmd_t>(this, 8) (this, nSlot, sequence_number);
-}
 
 enum
 {

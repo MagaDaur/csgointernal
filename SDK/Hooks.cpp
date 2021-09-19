@@ -278,20 +278,28 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 
 	if (!cmd || !cmd->command_number) return false;
 
-	uintptr_t* FPointer; __asm { MOV FPointer, EBP }
-	bool* bSendPackets = (bool*)(*FPointer - 0x1C);
+	uintptr_t* fptr; __asm mov fptr, ebp
+	bool* bSendPackets = (bool*)(*fptr - 0x1C);
 
 	if (!bSendPackets) return false;
+
+	if (g_Settings.bMenuOpened)
+	{
+		cmd->buttons = 0;
+		cmd->forwardmove = 0.f;
+		cmd->sidemove = 0.f;
+	}
 
 	g_Misc.OnPrePrediction(cmd, bSendPackets);
 
 	engine_prediction::RunEnginePred(cmd);
+	{
+		g_RageBot.OnPrediction(cmd, bSendPackets);
 
-	g_RageBot.OnPrediction(cmd, bSendPackets);
-	g_Misc.OnPrediction();
-	g_AntiAim.OnPrediction(cmd, bSendPackets);
+		g_Misc.OnPrediction();
 
-	engine_prediction::EndEnginePred();
+		g_AntiAim.OnPrediction(cmd, bSendPackets);
+	} engine_prediction::EndEnginePred();
 
 	return false;
 }
@@ -302,12 +310,11 @@ bool __fastcall Hooks::hkdWriteUsercmdDeltaToBuffer(void* ecx, void* edx, int sl
 	
 	if(from == -1)
 	{
-		static ConVar* sv_maxusrcmdprocessticks = g_pCvar->FindVar("sv_maxusrcmdprocessticks");
 
 		int* pNumBackupCommands = (int*)(reinterpret_cast<uintptr_t>(buf) - 0x30);
 		int* pNumNewCommands = (int*)(reinterpret_cast<uintptr_t>(buf) - 0x2C);
 
-		*pNumNewCommands = std::clamp(g_pClientState->nChokedCommands + 1, 0, sv_maxusrcmdprocessticks->GetInt() + 1);
+		*pNumNewCommands = std::clamp(g_pClientState->nChokedCommands + 1, 0, 17);
 		*pNumBackupCommands = 0;
 
 		int nextcommandnr = g_pClientState->iLastOutgoingCommand + *pNumNewCommands + 1;
