@@ -35,7 +35,9 @@ Settings g_Settings;
 Hooks g_Hooks;
 NetvarTree g_Netvars;
 
+CRageBot g_RageBot;
 CAntiAim g_AntiAim;
+CMisc g_Misc;
 
 extern IMGUI_API LRESULT ImGui_ImplDX9_WndProcHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam);
 void WriteUsercmd(void* buf, CUserCmd* to, CUserCmd* from);
@@ -285,6 +287,7 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 
 	engine_prediction::RunEnginePred(cmd);
 
+	g_RageBot.OnPrediction(cmd, bSendPackets);
 	g_Misc.OnPrediction();
 	g_AntiAim.OnPrediction(cmd, bSendPackets);
 

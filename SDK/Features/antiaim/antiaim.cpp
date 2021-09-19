@@ -3,7 +3,6 @@
 #include "..\..\SDK\CInput.h"
 #include "..\..\SDK\CPrediction.h"
 #include "..\..\Settings.h"
-#include "..\..\SDK\CCSGOAnimationState.h"
 #include "..\..\SDK\IClientMode.h"
 #include "..\..\SDK\IClientEntityList.h"
 
@@ -14,7 +13,6 @@ void CAntiAim::OnPrediction(CUserCmd* cmd, bool* bSendPackets)
 	pCmd = cmd;
 
 	bFakeLagState = *bSendPackets;
-
 	angOriginal = cmd->viewangles;
 	vecMove = Vector(cmd->forwardmove, cmd->sidemove, 0.0f);
 
@@ -29,7 +27,6 @@ void CAntiAim::OnPrediction(CUserCmd* cmd, bool* bSendPackets)
 	}
 
 	Math.NormalizeAngles(pCmd->viewangles);
-
 	angCurrent = pCmd->viewangles;
 	*bSendPackets = bFakeLagState;
 
@@ -111,14 +108,4 @@ void CAntiAim::CorrectMovement()
 	pCmd->buttons &= ~IN_BACK;
 	pCmd->buttons &= ~IN_MOVELEFT;
 	pCmd->buttons &= ~IN_MOVERIGHT;
-}
-
-CAntiAim::CAntiAim()
-{
-	animlayers = new AnimationLayer[13];
-}
-
-CAntiAim::~CAntiAim()
-{
-	delete[] animlayers;
 }

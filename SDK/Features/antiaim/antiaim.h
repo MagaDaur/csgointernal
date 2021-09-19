@@ -1,14 +1,12 @@
 #include "..\\..\SDK\Vector.h"
+#include "..\..\SDK\CCSGOAnimationState.h"
 
 class CBaseEntity;
 class CUserCmd;
-class AnimationLayer;
 
 class CAntiAim
 {
 public:
-	CAntiAim();
-	~CAntiAim();
 
 	void OnPrediction(CUserCmd*, bool*);
 	void OnFrameStage(int);
@@ -29,7 +27,7 @@ private:
 	bool bDesyncDirection;
 	bool bFakeLagState = true;
 
-	AnimationLayer* animlayers;
+	AnimationLayer animlayers[13];
 	float poseparameters[24];
 	float goalfeetyaw;
 
