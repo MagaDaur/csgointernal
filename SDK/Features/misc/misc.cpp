@@ -1,10 +1,10 @@
 #include "misc.h"
-#include "..\..\Utils\Math.h"
-#include "..\\..\\SDK\CBaseEntity.h"
-#include "..\\..\\SDK\CInput.h"
-#include "..\\..\SDK\ICVar.h"
-#include "..\..\Settings.h"
-#include "..\..\SDK\IClientEntityList.h"
+#include "Utils\Math.h"
+#include "CBaseEntity.h"
+#include "CInput.h"
+#include "ICVar.h"
+#include "Settings.h"
+#include "IClientEntityList.h"
 #include <math.h>
 
 void CMisc::OnPrePrediction(CUserCmd* cmd, bool* bSendPackets)

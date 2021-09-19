@@ -216,14 +216,20 @@ int& CBaseEntity::GetTickBase()
 	return *(int*)((DWORD)(this) + m_nTickBase);
 }
 
-float CBaseEntity::GetSimTime() {
+float CBaseEntity::GetSimulationTime() {
 	static auto m_flSimulationtime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flSimulationTime");
 	return *(float*)(uintptr_t(this) + m_flSimulationtime);
 }
 
-float CBaseEntity::GetOldSimTime() {
+float CBaseEntity::GetOldSimulationTime() {
 	static auto m_flSimulationtime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flSimulationTime") + 0x4;
 	return *(float*)(uintptr_t(this) + m_flSimulationtime);
+}
+
+float CBaseEntity::GetAnimTime()
+{
+	static auto m_flAnimTime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flAnimTime");
+	return *(float*)(uintptr_t(this) + m_flAnimTime);
 }
 
 Vector& CBaseEntity::GetOrigin()
@@ -272,7 +278,7 @@ float CBaseEntity::NextAttack() {
 }
 
 int CBaseEntity::ChokedTicks() {
-	return TIME_TO_TICKS(this->GetSimTime() - this->GetOldSimTime());
+	return TIME_TO_TICKS(this->GetSimulationTime() - this->GetOldSimulationTime());
 }
 
 CCSGOAnimState* CBaseEntity::GetAnimState() {

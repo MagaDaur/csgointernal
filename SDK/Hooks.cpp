@@ -294,6 +294,8 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 
 	engine_prediction::RunEnginePred(cmd);
 	{
+		//legit here
+
 		g_RageBot.OnPrediction(cmd, bSendPackets);
 
 		g_Misc.OnPrediction();

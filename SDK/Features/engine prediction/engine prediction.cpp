@@ -1,10 +1,10 @@
 #include "engine prediction.h"
-#include "..\..\SDK\CInput.h"
-#include "..\..\SDK\CBaseEntity.h"
-#include "..\..\Utils\GlobalVars.h"
-#include "..\..\SDK\CPrediction.h"
-#include "..\..\SDK\CGlobalVarsBase.h"
-#include "..\..\SDK\IClientEntityList.h"
+#include "CInput.h"
+#include "CBaseEntity.h"
+#include "Utils\GlobalVars.h"
+#include "CPrediction.h"
+#include "CGlobalVarsBase.h"
+#include "IClientEntityList.h"
 #pragma once
 
 float flOldCurtime;

@@ -1,10 +1,10 @@
 #include "antiaim.h"
-#include "..\..\SDK\CBaseEntity.h"
-#include "..\..\SDK\CInput.h"
-#include "..\..\SDK\CPrediction.h"
-#include "..\..\Settings.h"
-#include "..\..\SDK\IClientMode.h"
-#include "..\..\SDK\IClientEntityList.h"
+#include "CBaseEntity.h"
+#include "CInput.h"
+#include "CPrediction.h"
+#include "Settings.h"
+#include "IClientMode.h"
+#include "IClientEntityList.h"
 
 void CAntiAim::OnPrediction(CUserCmd* cmd, bool* bSendPackets)
 {

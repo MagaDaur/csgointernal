@@ -1,5 +1,5 @@
-#include "..\\..\SDK\Vector.h"
-#include "..\..\SDK\CCSGOAnimationState.h"
+#include "Vector.h"
+#include "CCSGOAnimationState.h"
 
 class CBaseEntity;
 class CUserCmd;
@@ -7,11 +7,13 @@ class CUserCmd;
 class CAntiAim
 {
 public:
-
 	void OnPrediction(CUserCmd*, bool*);
 	void OnFrameStage(int);
-private:
+	
+protected:
+	QAngle angOriginal;
 
+private:
 	void Yaw();
 	void Pitch();
 	bool LowerBodyYawUpdate();
@@ -19,7 +21,6 @@ private:
 	void CorrectMovement();
 
 	QAngle angCurrent;
-	QAngle angOriginal;
 	Vector vecMove;
 
 	float flLowerbodyTimer;

@@ -1,5 +1,5 @@
-#include "..\..\SDK\VMatrix.h"
-#include "..\..\SDK\Vector.h"
+#include "VMatrix.h"
+#include "Vector.h"
 #include <deque>
 
 class CBaseEntity;
@@ -24,5 +24,8 @@ public:
 
 	std::deque<LagRecord>* GetRecords(CBaseEntity*);
 private:
+	void StoreRecord(CBaseEntity*);
+	void ClearRecords(int);
+
 	std::deque<LagRecord> deqRecords[64];
 };

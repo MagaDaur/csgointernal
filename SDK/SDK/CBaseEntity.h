@@ -90,9 +90,11 @@ public:
 
 	int& GetTickBase();
 
-	float GetSimTime();
+	float GetSimulationTime();
 
-	float GetOldSimTime();
+	float GetOldSimulationTime();
+
+	float GetAnimTime();
 
 	Vector& GetOrigin();
 

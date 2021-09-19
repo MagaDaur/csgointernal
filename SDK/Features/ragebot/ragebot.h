@@ -6,9 +6,11 @@ class CRageBot
 {
 public:
 	void OnPrediction(CUserCmd*, bool*);
-private:
-	void AutoShot();
 
+protected:
+	void AutoShot();
+	
+private:
 	bool bFakeLagState = true;
 
 	CUserCmd* pCmd;
