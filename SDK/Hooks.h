@@ -36,6 +36,7 @@ typedef void(__thiscall* BuildTransformationsFn)(CBaseEntity*, c_studio_hdr*, Ve
 typedef bool (__thiscall* SetupBonesFn)(IClientRenderable*, matrix3x4_t*, int, int, float);
 typedef void (__cdecl* CL_MoveFn)(float, bool);
 typedef void(__cdecl* CL_SendMoveFn)();
+typedef void(__thiscall* CheckForSequenceChangeFn)(void*, void*, int, bool, bool);
 
 extern DoExtraBoneProcessingFn oDoExtraBoneProcessing;
 extern BuildTransformationsFn oBuildTransformations;
@@ -43,6 +44,7 @@ extern StandardBlendingRulesFn oStandardBlendingRules;
 extern SetupBonesFn oSetupBones;
 extern CL_MoveFn oCL_Move;
 extern CL_SendMoveFn oCL_SendMove;
+extern CheckForSequenceChangeFn oCheckForSequenceChange;
 
 
 class VMTHook;
@@ -82,6 +84,7 @@ public:
 	static void __cdecl hkCL_Move(float, bool);
 	static void __cdecl hkCL_SendMove();
 	static int __fastcall hkSendDatagram(NetChannel*, void*, bf_write*);
+	static void __fastcall hkCheckForSequenceChange(void*, void*, void*, int, bool, bool);
 
 
 private:

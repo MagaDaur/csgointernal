@@ -14,6 +14,8 @@
 #include "SDK/IVModelRender.h"
 #include "SDK/IMaterialSystem.h"
 #include "SDK/IVModelInfoClient.h"
+#include "SDK/IClientEntityList.h"
+#include "SDK/CBaseCombatWeapon.h"
 
 #include "Features/ragebot/ragebot.h"
 #include "Features/misc/misc.h"
@@ -33,6 +35,8 @@ Settings g_Settings;
 Hooks g_Hooks;
 NetvarTree g_Netvars;
 
+CAntiAim g_AntiAim;
+
 extern IMGUI_API LRESULT ImGui_ImplDX9_WndProcHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam);
 void WriteUsercmd(void* buf, CUserCmd* to, CUserCmd* from);
 
@@ -42,6 +46,7 @@ StandardBlendingRulesFn oStandardBlendingRules;
 SetupBonesFn oSetupBones;
 CL_MoveFn oCL_Move;
 CL_SendMoveFn oCL_SendMove;
+CheckForSequenceChangeFn oCheckForSequenceChange;
 
 void Hooks::Init()
 {
@@ -109,6 +114,9 @@ void Hooks::Init()
 
 	DWORD* dwCL_SendMove = (DWORD*)Utils::FindSignature("engine.dll", "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? B9 ? ? ? ? 53 8B 98");
 	oCL_SendMove = (CL_SendMoveFn)DetourFunction((PBYTE)dwCL_SendMove, (PBYTE)Hooks::hkCL_SendMove);
+
+	DWORD* dwCheckForSequenceChange = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 51 53 8B 5D 08 56 8B F1 57 85");
+	oCheckForSequenceChange = (CheckForSequenceChangeFn)DetourFunction((PBYTE)dwCheckForSequenceChange, (PBYTE)Hooks::hkCheckForSequenceChange);
 	
 	Utils::Log( "Hooking completed!" );
 }
@@ -122,6 +130,7 @@ void Hooks::Restore()
 		DetourRemove((PBYTE)oStandardBlendingRules, (PBYTE)Hooks::hkStandardBlendingRules);
 		DetourRemove((PBYTE)oCL_Move, (PBYTE)Hooks::hkCL_Move);
 		DetourRemove((PBYTE)oCL_SendMove, (PBYTE)Hooks::hkCL_SendMove);
+		DetourRemove((PBYTE)oCheckForSequenceChange, (PBYTE)Hooks::hkCheckForSequenceChange);
 
 		g_Hooks.pEventHook->Unhook(vtable_indexes::firegamevent);
 		g_Hooks.pClientHook->Unhook(24);
@@ -230,12 +239,23 @@ bool __fastcall Hooks::hkSetupBones(IClientRenderable* rplayer, uint32_t edx, ma
 
 void __fastcall Hooks::hkStandardBlendingRules(CBaseEntity* player, uint32_t edx, c_studio_hdr* hdr, Vector* pos, Quaternion* q, float curtime, int mask)
 {
+	player->GetEffects() |= 0x8;
+
 	oStandardBlendingRules(player, hdr, pos, q, curtime, mask);
+
+	player->GetEffects() &= ~0x8;
 }
 
 void __fastcall Hooks::hkBuildTransformations(CBaseEntity* player, uint32_t edx, c_studio_hdr* hdr, Vector* pos, Quaternion* q, const matrix3x4_t& cameraTransform, int boneMask, uint8_t* boneComputed)
 {
+	//player->JiggleEnabled() = false;
+
 	oBuildTransformations(player, hdr, pos, q, cameraTransform, boneMask, boneComputed);
+}
+
+void __fastcall Hooks::hkCheckForSequenceChange(void* ecx, void* edx, void* hdr, int nCurSequence, bool bForceNewSequence, bool interpolate)
+{
+	oCheckForSequenceChange(ecx, hdr, nCurSequence, bForceNewSequence, false);
 }
 
 void __fastcall Hooks::hkDoExtraBoneProcessing(CBaseEntity* player, uint32_t edx, c_studio_hdr* hdr, Vector* pos, Quaternion* q, const matrix3x4_t& mat, uint8_t* bone_computed, void* context)
@@ -261,20 +281,14 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 
 	if (!bSendPackets) return false;
 
-	CBaseEntity* local = g_pEntityList->GetClientEntity(g_pEngine->GetLocalPlayer());
-	if (!local) return false;
+	g_Misc.OnPrePrediction(cmd, bSendPackets);
 
-	CBaseCombatWeapon* weapon = local->GetActiveWeapon();
-	if (!weapon) return false;
+	engine_prediction::RunEnginePred(cmd);
 
-	const WeaponInfo_t* wpninfo = weapon->GetWeaponInfo();
-	if (!wpninfo) return false;
+	g_Misc.OnPrediction();
+	g_AntiAim.OnPrediction(cmd, bSendPackets);
 
-	g_Misc.OnPrePrediction(local, cmd, bSendPackets);
-
-	engine_prediction::RunEnginePred(local, cmd);
-
-	engine_prediction::EndEnginePred(local);
+	engine_prediction::EndEnginePred();
 
 	return false;
 }
@@ -282,8 +296,29 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 bool __fastcall Hooks::hkdWriteUsercmdDeltaToBuffer(void* ecx, void* edx, int slot, bf_write* buf, int from, int to, bool isnewcommand)
 {
 	static auto oWriteUserCmdDeltaToBuffer = g_Hooks.pClientHook->GetOriginal <WriteUsercmdDeltaToBufferFn>(24);
-		
-	return oWriteUserCmdDeltaToBuffer(ecx, slot, buf, from, to, isnewcommand);
+	
+	if(from == -1)
+	{
+		static ConVar* sv_maxusrcmdprocessticks = g_pCvar->FindVar("sv_maxusrcmdprocessticks");
+
+		int* pNumBackupCommands = (int*)(reinterpret_cast<uintptr_t>(buf) - 0x30);
+		int* pNumNewCommands = (int*)(reinterpret_cast<uintptr_t>(buf) - 0x2C);
+
+		*pNumNewCommands = std::clamp(g_pClientState->nChokedCommands + 1, 0, sv_maxusrcmdprocessticks->GetInt() + 1);
+		*pNumBackupCommands = 0;
+
+		int nextcommandnr = g_pClientState->iLastOutgoingCommand + *pNumNewCommands + 1;
+
+		for(int to = nextcommandnr - *pNumNewCommands; to <= nextcommandnr; ++to)
+		{
+			bool isnewcmd = to >= nextcommandnr;
+
+			oWriteUserCmdDeltaToBuffer(ecx, 0, buf, from, to, isnewcmd);
+			from = to;
+		}
+	}
+
+	return true;
 }
 
 bool __fastcall Hooks::FireEventClientSide(void* ecx, void* edx, IGameEvent* event) {
@@ -295,6 +330,8 @@ bool __fastcall Hooks::FireEventClientSide(void* ecx, void* edx, IGameEvent* eve
 void __fastcall Hooks::FrameStageNotify(void* ecx, void* edx, int curStage)
 {
 	static auto oFrameStage = g_Hooks.pClientHook->GetOriginal<FrameStageNotify_t>(vtable_indexes::frameStage);
+
+	g_AntiAim.OnFrameStage(curStage);
 
 	oFrameStage(ecx, curStage);
 }

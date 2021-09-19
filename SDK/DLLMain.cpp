@@ -16,7 +16,7 @@ DWORD WINAPI OnDllAttach(PVOID base)
     Utils::Log("Console Allocated!");
     Hooks::Init();
 
-    while (g_Settings.bCheatActive)
+    while (g_Settings.bCheatActive && GetKeyState(VK_END) == 0)
     {
         using namespace std::literals::chrono_literals;
         std::this_thread::sleep_for(100ms);

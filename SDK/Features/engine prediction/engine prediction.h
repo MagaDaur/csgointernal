@@ -1,11 +1,7 @@
 #pragma once
-#include "..\..\SDK\CInput.h"
-#include "..\..\SDK\CBaseEntity.h"
-#include "..\..\Utils\GlobalVars.h"
-#include "..\..\SDK\CPrediction.h"
-#include "..\..\SDK\CGlobalVarsBase.h"
+class CUserCmd;
 namespace engine_prediction
 {
-    void RunEnginePred(CBaseEntity* local, CUserCmd* cmd);
-    void EndEnginePred(CBaseEntity* local);
+    void RunEnginePred(CUserCmd* cmd);
+    void EndEnginePred();
 }

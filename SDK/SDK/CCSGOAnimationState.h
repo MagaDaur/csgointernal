@@ -1,5 +1,9 @@
 #pragma once
-#include "CBaseEntity.h"
+#include "Vector.h"
+#include "..\Utils\Utils.h"
+
+class CBaseEntity;
+
 class CCSGOAnimState
 {
 public:
@@ -56,32 +60,14 @@ public:
 
 	static void Create(CCSGOAnimState* state, CBaseEntity* entity)
 	{
-		 typedef void(__thiscall* CreateAnimState_t)(CCSGOAnimState*, CBaseEntity*);
+		typedef void(__thiscall* CreateAnimState_t)(CCSGOAnimState*, CBaseEntity*);
 		static auto CreateAnimState = (CreateAnimState_t)Utils::FindSignature("client.dll", "55 8B EC 56 8B F1 B9 ?? ?? ?? ?? C7 46");
 		CreateAnimState(state, entity);
 	}
 
-	void Update(QAngle angle)
-	{
-		static auto UpdateAnimState = Utils::FindSignature("client.dll", "55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 F3 0F 11 54 24");
+	void Update(QAngle angle);
 
-		__asm {
-			push 0
-			mov ecx, this
-			movss xmm1, dword ptr[angle + 4]
-			movss xmm2, dword ptr[angle]
-
-			call UpdateAnimState
-		}
-	}
-
-	void Reset()
-	{
-		typedef void(__thiscall* ResetAnimState_t)(CCSGOAnimState*);
-		static auto ResetAnimState = (ResetAnimState_t)Utils::FindSignature("client.dll", "56 6A 01 68 ? ? ? ? 8B F1");
-
-		ResetAnimState(this);
-	}
+	void Reset();
 };
 
 class AnimationLayer
@@ -95,6 +81,6 @@ public:
 	float_t m_flWeightDeltaRate; //0x0024
 	float_t m_flPlaybackRate; //0x0028
 	float_t m_flCycle; //0x002C
-	void* m_pOwner; //0x0030 // player's thisptr
+	CBaseEntity* m_pOwner; //0x0030 // player's thisptr
 	char  pad_0038[4]; //0x0034
 }; //Size: 0x0038

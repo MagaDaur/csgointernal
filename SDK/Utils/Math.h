@@ -2,7 +2,7 @@
 #include <vector>
 #include <array>
 #include "SPoint.h"
-#include "Vector.h"
+#include "..\SDK\Vector.h"
 #include "..\SDK\VMatrix.h"
 #include "..\SDK\IVEngineClient.h"
 #include "..\\SDK\CGlobalVarsBase.h"
@@ -40,10 +40,17 @@ public:
 	void MatrixCopy(const matrix3x4_t& source, matrix3x4_t& target);
 	float DotProduct(float* v1, float* v2);
 	float DotProduct(Vector v1, Vector v2);
-	float Lerp(float start, float end, float speed = .5f);
+	float Lerp(float start, float end, float speed);
 	QAngle VectorToAngle(Vector);
 	Vector AngleToVector(QAngle);
-	template<typename t> t Clamp(t, t, t);
+	template<typename t> t Clamp(t val, t min, t max)
+	{
+		if(val < min)
+			return min;
+		else if(val > max)
+			return max;
+		return val;
+	};
 };
 
 extern CMath Math;

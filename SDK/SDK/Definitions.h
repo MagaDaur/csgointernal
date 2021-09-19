@@ -290,7 +290,7 @@ enum classid_t
 	SporeTrail,
 };
 
-enum class MoveType_t
+enum MoveType_t
 {
     MOVETYPE_NONE = 0,
     MOVETYPE_ISOMETRIC,

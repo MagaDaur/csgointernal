@@ -5,11 +5,6 @@ class ConVar
 {
 public:
 
-	void SetValue(const char* str)
-	{
-		typedef void(__thiscall * SetStringFn)(void*, const char*);
-		return Utils::GetVFunc<SetStringFn>(this, 13)(this, str);
-	}
 	void SetValue(float value)
 	{
 		typedef void(__thiscall * OriginalFn)(void*, float);
@@ -40,8 +35,8 @@ public:
 		typedef float(__thiscall * SetValueFn)(void*);
 		return Utils::GetVFunc< SetValueFn >(this, 12)(this);
 	}
-	int GetInt(void) const {
-		return pParent->nValue;
+	int GetInt(void) {
+		return Utils::CallVFunc<13, int>(this);
 	}
 	const char* GetString(void) const {
 		return pParent->pszDefaultValue;
@@ -69,30 +64,10 @@ public:
 
 };//Size=0x0048
 
-
-class IAppSystem2
-{
-public:
-	virtual ~IAppSystem2()
-	{
-	}
-
-	virtual void func0() = 0;
-	virtual void func1() = 0;
-	virtual void func2() = 0;
-	virtual void func3() = 0;
-	virtual void func4() = 0;
-	virtual void func5() = 0;
-	virtual void func6() = 0;
-	virtual void func7() = 0;
-	virtual void func8() = 0;
-	virtual void func9() = 0;
-};
-
 class ConCommandBase;
 class ConCommand;
 struct CVarDLLIdentifier_t;
-class ICVar : public IAppSystem2
+class ICVar
 {
 public:
 	template <typename... Values>
@@ -103,8 +78,7 @@ public:
 	}
 	ConVar* FindVar(const char* var_name)
 	{
-		typedef ConVar* (__thiscall* FindVarFn)(void*, const char*);
-		return Utils::GetVFunc< FindVarFn >(this, 16)(this, var_name);
+		return Utils::CallVFunc<17, ConVar*>(this, var_name);
 	}
 };
 

@@ -100,7 +100,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SDK\Convars.cpp" />
     <ClCompile Include="SDK\Features\antiaim\antiaim.cpp" />
     <ClCompile Include="SDK\Features\lagcomp\lagcomp.cpp" />
     <ClCompile Include="SDK\Features\engine prediction\engine prediction.cpp" />
@@ -113,6 +112,9 @@
     <ClCompile Include="SDK\Hooks.cpp" />
     <ClCompile Include="SDK\DLLMain.cpp" />
     <ClCompile Include="SDK\Menu.cpp" />
+    <ClCompile Include="SDK\SDK\CBaseCombatWeapon.cpp" />
+    <ClCompile Include="SDK\SDK\CBaseEntity.cpp" />
+    <ClCompile Include="SDK\SDK\CCSGOAnimationState.cpp" />
     <ClCompile Include="SDK\Utils\D3DFont.cpp" />
     <ClCompile Include="SDK\Utils\DrawManager.cpp" />
     <ClCompile Include="SDK\Utils\GlobalVars.cpp" />
@@ -123,7 +125,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="detour\detours.h" />
-    <ClInclude Include="SDK\Convars.h" />
     <ClInclude Include="SDK\Features\antiaim\antiaim.h" />
     <ClInclude Include="SDK\Features\lagcomp\lagcomp.h" />
     <ClInclude Include="SDK\Features\engine prediction\engine prediction.h" />

@@ -2,307 +2,123 @@
 #include "Definitions.h"
 #include "IClientUnknown.h"
 #include "IClientNetworkable.h"
-#include "IClientEntityList.h"
-#include "ClientClass.h"
-#include "IMaterialSystem.h"
-#include "IVModelInfoClient.h"
-#include "CGlobalVarsBase.h"
-#include "CInput.h"
-#include "IWeaponSystem.h"
-#include "CBaseCombatWeapon.h"
-#include "CCSGOAnimationState.h"
-#include "..\Utils\Math.h"
+#include "IClientEntity.h"
+
 #include "..\Utils\Utils.h"
 #include "..\Utils\NetvarManager.h"
+
+class CBaseCombatWeapon;
+class CCSGOAnimState;
+class AnimationLayer;
+class CCSGOAnimState;
+
 #define TIME_TO_TICKS( dt )		( (int)( 0.5 + (float)(dt) / g_pGlobalVars->intervalPerTick ) )
 #define TICKS_TO_TIME( t )		( g_pGlobalVars->intervalPerTick *( t ) )
 
 class CBaseEntity : public IClientUnknown, public IClientRenderable, public IClientNetworkable
 {
 public:
-	template<typename T> T GetProp(std::string name)
-	{
-		ClientClass* clientclass = this->GetClientClass();
+	template<typename T> T GetProp(std::string name);
 
-		uintptr_t offset = g_Netvars.GetProp(clientclass->pNetworkName, name);
+	bool& JiggleEnabled();
 
-		return *(T*)(uintptr_t(this) + offset);
-	}
-	AnimationLayer* GetAnimLayers() {
-		return *(AnimationLayer**)(DWORD(this) + 0x2990);
-	}
+	AnimationLayer* GetAnimLayers();
 
-	CBaseCombatWeapon* GetActiveWeapon() {
-		return reinterpret_cast<CBaseCombatWeapon*>(g_pEntityList->GetClientEntityFromHandle(GetActiveWeaponHandle()));
-	}
+	CBaseCombatWeapon* GetActiveWeapon();
 
-	CBaseEntity* GetGroundEntity()
-	{
-		static auto m_hGroundEntity = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_hGroundEntity");
-		CBaseHandle hGroundEntity = *(CBaseHandle*)(m_hGroundEntity);
-		return reinterpret_cast<CBaseEntity*>(g_pEntityList->GetClientEntityFromHandle(hGroundEntity));
-	}
+	CBaseEntity* GetGroundEntity();
 
-	PVOID UTIL_PlayerByIndex()
-	{
-		typedef void* (__fastcall* PlayerByIndex)(int);
-		static PlayerByIndex UTIL_PlayerByIndex = (PlayerByIndex)Utils::FindSignature("server.dll", "85 C9 7E 2A A1");
-		if (!UTIL_PlayerByIndex)
-			return nullptr;
-		return UTIL_PlayerByIndex(this->EntIndex());
-	}
+	PVOID UTIL_PlayerByIndex();
 
-	std::string GetName()
-	{
-		PlayerInfo_t pinfo;
-		g_pEngine->GetPlayerInfo(this->EntIndex(), &pinfo);
-		return pinfo.szName;
-	}
+	std::string GetName();
 
-	void DrawServerBox(float flDuration, bool bMonoColor)
-	{
-		PVOID pEntity = UTIL_PlayerByIndex();
-		if (!pEntity)
-			return;
-		static DWORD Draw = Utils::FindSignature("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
-		__asm
-		{
-			pushad
-			movss xmm1, flDuration
-			push bMonoColor
-			mov ecx, pEntity
-			call Draw
-			popad
-		}
-	}
+	void DrawServerBox(float flDuration, bool bMonoColor);
 
-	float& GetVelocityModifier()
-	{
-		static auto m_flVelocityModifier = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flVelocityModifier");
-		return *(float*)(DWORD(this) + m_flVelocityModifier);
-	}
+	float& GetVelocityModifier();
 
-	void SetModelIndex(int model)
-	{
-		return Utils::CallVFunc<75, void>(this, model);
-	}
+	void SetModelIndex(int model);
 
-	uint32_t& GetReadableBones()
-	{
-		return *(uint32_t*)((DWORD)this + 0x26AC);
-	}
+	uint32_t& GetReadableBones();
 
-	uint32_t& GetWritableBones()
-	{
-		return *(uint32_t*)((DWORD)this + 0x26B0);
-	}
+	uint32_t& GetWritableBones();
 
-	matrix3x4_t*& GetBoneArrayForWrite()
-	{
-		return *(matrix3x4_t**)((DWORD)this + 0x26A8);
-	}
+	matrix3x4_t*& GetBoneArrayForWrite();
 
-	float SpawnTime() {
-		static auto m_flSpawnTime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flSpawnTime");
-		return *(float*)(DWORD(this) + m_flSpawnTime);
-	}
+	float SpawnTime();
 
-	int& GetEffects()
-	{
-		static auto offset = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_fEffects");
-		return *(int*)(DWORD(this) + offset);
-	}
+	int& GetEffects();
 
-	bool IsPlayer() {
-		typedef bool(__thiscall* IsPlayerfn)(void*);
-		return Utils::GetVFunc<IsPlayerfn>(this, 157)(this);
-	}
+	bool IsPlayer();
 
-	bool isScoped() {
-		static auto m_bIsScoped = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bIsScoped");
-		return *(bool*)(uintptr_t(this) + m_bIsScoped);
-	}
+	bool IsScoped();
 
-	void ClientAnimations(bool toggle) {
-		static auto m_bClientAnimation = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bClientSideAnimation");
-		*(bool*)((DWORD)this + m_bClientAnimation) = toggle;
-	}
+	void ClientAnimations(bool toggle);
 
-	void UpdateClientAnimation()
-	{
-		Utils::GetVFunc<void(__thiscall*)(void*)>(this, 223)(this);
-	}
+	void UpdateClientAnimation();
 
-	float* GetPoseParameters() {
-		static auto m_flPoseParameter = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flPoseParameter");
-		return (float*)((DWORD)this + m_flPoseParameter);
-	}
+	float* GetPoseParameters();
 private:
-	DWORD GetActiveWeaponHandle() {
-		static auto m_hActiveWeapon = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_hActiveWeapon");
-		return *(DWORD*)(uintptr_t(this) + m_hActiveWeapon);
-	}
+	DWORD GetActiveWeaponHandle();
 public:
-	float& GetLowerBodyYaw() {
-		return *(float*)(DWORD(this) + 0x3A90);
-	}
+	float& GetLowerBodyYaw();
 
-	int GetTeam() {
-		static auto m_iTeamNum = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_iTeamNum");
-		return *(int*)(uintptr_t(this) + m_iTeamNum);
-	}
-	bool bHasHeavyArmor() {
-		static auto m_bHasHeavyArmor = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bHasHeavyArmor");
-		return *(bool*)(uintptr_t(this) + m_bHasHeavyArmor);
-	}
+	int GetTeam();
 
-	int& GetFlags() {
-		static auto m_fFlags = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_fFlags");
-		return *(int*)((DWORD)this + m_fFlags);
-	}
+	bool bHasHeavyArmor();
 
-	float& GetFlashMaxAlpha() {
-		static auto m_flFlashMaxAlpha = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flFlashMaxAlpha");
-		return *(float*)((DWORD)this + m_flFlashMaxAlpha);
-	}
+	int& GetFlags();
 
-	int GetMoney() {
-		static auto m_iAccount = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_iAccount");
-		return *(int*)(uintptr_t(this) + m_iAccount);
-	}
+	float& GetFlashMaxAlpha();
 
-	QAngle& GetAngEyeAngles() {
-		static auto m_angEyeAngles = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_angEyeAngles");
-		return *(QAngle*)(DWORD(this) + m_angEyeAngles);
-	}
+	int GetMoney();
 
-	Vector& GetVelocity()
-	{
-		static auto m_vecVelocity = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecVelocity[0]");
-		return *(Vector*)((DWORD)this + 0x114);
-	}
+	QAngle& GetAngEyeAngles();
 
-	int HitBoxSet() {
-		static auto m_nHitBoxSet = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_nHitboxSet");
-		return *(int*)(uintptr_t(this) + m_nHitBoxSet);
-	}
+	Vector& GetVelocity();
 
-	int GetMoveType()
-	{
-		static auto m_Movetype = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_nRenderMode") + 1;
-		return *(int*)(uintptr_t(this) + m_Movetype);
-	}
+	int HitBoxSet();
 
-	bool GetLifeState()
-	{
-		static auto m_lifeState = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_lifeState");
-		return *(bool*)(uintptr_t(this) + m_lifeState);
-	}
+	int GetMoveType();
 
-	int GetHealth()
-	{
-		static auto m_iHealth = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_iHealth");
-		return *(int*)(uintptr_t(this) + m_iHealth);
-	}
+	bool GetLifeState();
 
-	bool IsAlive() 
-	{ 
-		return (this->GetHealth() > 0 && this->GetLifeState() == 0); 
-	}
+	int GetHealth();
 
-	bool IsImmune()
-	{
-		static auto m_bGunGameImmunity = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bGunGameImmunity");
-		return *(bool*)(uintptr_t(this) + m_bGunGameImmunity);
-	}
+	bool IsAlive();
 
-	int& GetTickBase()
-	{
-		static auto m_nTickBase = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_nTickBase");
-		return *(int*)((DWORD)(this) + m_nTickBase);
-	}
+	bool IsImmune();
 
-	float GetSimTime() {
-		static auto m_flSimulationtime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flSimulationTime");
-		return *(float*)(uintptr_t(this) + m_flSimulationtime);
-	}
+	int& GetTickBase();
 
-	float GetOldSimTime() {
-		static auto m_flSimulationtime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flSimulationTime") + 0x4;
-		return *(float*)(uintptr_t(this) + m_flSimulationtime);
-	}
+	float GetSimTime();
 
-	Vector& GetOrigin()
-	{
-		static auto m_vecOrigin = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecOrigin");
-		return *(Vector*)(uintptr_t(this) + m_vecOrigin);
-	}
+	float GetOldSimTime();
 
-	Vector GetViewOffset()
-	{
-		static auto m_vecViewOffset = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecViewOffset[0]");
-		return *(Vector*)(uintptr_t(this) + m_vecViewOffset);
-	}
+	Vector& GetOrigin();
 
-	QAngle GetPunchAngles()
-	{ 
-		static auto m_aimPunchAngle = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_aimPunchAngle");
-		return *(QAngle*)(uintptr_t(this) + m_aimPunchAngle);
-	}
+	Vector GetViewOffset();
 
-	Vector GetEyePosition()
-	{ 
-		return this->GetOrigin() + this->GetViewOffset(); 
-	}
+	QAngle GetPunchAngles();
 
-	int GetArmor()
-	{
-		static auto m_ArmorValue = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_ArmorValue");
-		return *(int*)(uintptr_t(this) + m_ArmorValue);
-	}
+	Vector GetEyePosition();
 
-	int HeavyArmor() {
-		static auto m_bHasHeavyArmor = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bHasHeavyArmor");
-		return *(int*)(uintptr_t(this) + m_bHasHeavyArmor);
-	}
+	int GetArmor();
 
-	bool HasHelmet()
-	{
-		static auto m_bHasHelmet = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bHasHelmet");
-		return *(bool*)(uintptr_t(this) + m_bHasHelmet);
-	}
+	int HeavyArmor();
 
-	float NextAttack() {
-		static auto m_flNextAttack = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flNextAttack");
-		return *(float*)((uintptr_t)this + m_flNextAttack);
-	}
+	bool HasHelmet();
 
-	int ChokedTicks() {
-		return TIME_TO_TICKS(this->GetSimTime() - this->GetOldSimTime());
-	}
+	float NextAttack();
 
-	CCSGOAnimState* GetAnimState() {
-		static auto offset = *(uintptr_t*)(Utils::FindSignature("client.dll", "8B 8E ? ? ? ? EB 39") + 0x2);
-		return *(CCSGOAnimState**)(uintptr_t(this) + offset);
-	}
-	void SetAbsAngles(QAngle angles)
-	{
-		typedef void(__thiscall* SetAbsAnglesFn)(CBaseEntity*, const QAngle & angles);
-		static auto SetAbsAngles = (SetAbsAnglesFn)(Utils::FindSignature("client.dll", "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1 E8"));
+	int ChokedTicks();
 
-		SetAbsAngles(this, angles);
-	}
-	void SetAbsOrigin(Vector origin)
-	{
-		typedef void(__thiscall* SetAbsOriginFn)(void*, const Vector & origin);
-		static auto SetAbsOrigin = (SetAbsOriginFn)Utils::FindSignature("client.dll", "55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8 ? ? ? ? 8B 7D");
+	CCSGOAnimState* GetAnimState();
 
-		SetAbsOrigin(this, origin);
-	}
-	QAngle& GetAbsAngles() {
-		return Utils::CallVFunc<11, QAngle&>(this);
-	}
-	Vector& GetAbsOrigin() {
-		return Utils::CallVFunc<10, Vector&>(this);
-	}
+	void SetAbsAngles(float yaw);
+
+	void SetAbsOrigin(Vector origin);
+
+	QAngle& GetAbsAngles();
+
+	Vector& GetAbsOrigin();
 };

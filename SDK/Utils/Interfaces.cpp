@@ -110,10 +110,10 @@ namespace interfaces
 		g_MatSystem      = CaptureInterface<IMaterialSystem>( "materialsystem.dll", "VMaterialSystem080" );          // Get IMaterialSystem
 		g_pEngineTrace   = CaptureInterface<IEngineTrace>("engine.dll", "EngineTraceClient004");                  //EngineTraceClient004
 		g_PhysSurface    = CaptureInterface<IPhysicsSurfaceProps>("vphysics.dll","VPhysicsSurfaceProps001");      //VPhysicsSurfaceProps001
-		g_pCvar = reinterpret_cast<ICVar*>(FindInterface("vstdlib.dll", "VEngineCvar"));
+		g_pCvar = CaptureInterface<ICVar>("vstdlib.dll", "VEngineCvar007");
 		g_pGameInput = *(CInput * *)(Utils::FindSignature("client.dll", "B9 ? ? ? ? F3 0F 11 04 24 FF 50 10") + 1);
 		g_pPanel = reinterpret_cast<IPanel*>(FindInterface("vgui2.dll", "VGUI_Panel"));
-		g_pClientState = get_method(g_pEngine, 12).add(16).get(2).as< CClientState* >();
+		g_pClientState = **reinterpret_cast<CClientState***>(Utils::FindSignature("engine.dll", "A1 ? ? ? ? 8B 88 ? ? ? ? 85 C9 75 07") + 0x1);
 		g_pDebugOverlay = CaptureInterface<IVDebugOverlay>("engine.dll", "VDebugOverlay004");
 		g_pWeaponSys = *reinterpret_cast<IWeaponSystem**>(Utils::FindSignature("client.dll", "8B 35 ? ? ? ? FF 10 0F B7 C0") + 0x2);
 		g_pInputSystem = CaptureInterface<CInputSystem>("vstdlib.dll'", "InputSystemVersion001");

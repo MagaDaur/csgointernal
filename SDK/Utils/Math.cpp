@@ -382,12 +382,3 @@ Vector CMath::AngleToVector(QAngle ang)
 	AngleVectors(ang, ret);
 	return ret;
 }
-
-template<typename t> t CMath::Clamp(t val, t min, t max)
-{
-	if(val < min)
-		return min;
-	else if(val > max)
-		return max;
-	return val;
-}

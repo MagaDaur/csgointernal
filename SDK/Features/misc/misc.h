@@ -1,17 +1,20 @@
-#include "CInput.h"
 class CBaseEntity;
 class CUserCmd;
 class CMisc
 {
 public:
-	void OnPrePrediction(CBaseEntity*, CUserCmd*, bool*);
+	void OnPrePrediction(CUserCmd*, bool*);
+	void OnPrediction();
 private:
-	void Bhop(CBaseEntity*, CUserCmd*);
-	void FakeLag(CBaseEntity*, CUserCmd*);
-	void AutoStrafe(CBaseEntity*, CUserCmd*);
+	void Bhop();
+	void FakeLag();
+	void AutoStrafe();
 
-	bool bFakelagState;
+	bool bFakelagState = true;
 	int iChokedPackets;
+
+	CBaseEntity* pLocalPlayer;
+	CUserCmd* pCmd;
 };
 
 inline CMisc g_Misc;

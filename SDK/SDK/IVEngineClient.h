@@ -90,6 +90,12 @@ public:
     int m_nInReliableState;
     int m_nChokedPackets; // 0x2C
 
+	bool SendNetMsg(INetMessage& movemsg)
+	{
+		typedef bool(__thiscall* fn)(void*, INetMessage&, bool, bool);
+		return (*(fn**)(this))[40](this, movemsg, 0, 0);
+	}
+
     int SendDatagram()
     {
         typedef int(__thiscall* SendDatagramFn)(void*, void*);
@@ -377,43 +383,43 @@ public:
 
 class CClientState {
 public:
-    char pad0[156];					//0x0000
-    NetChannel* m_NetChannel;      //0x009C
-    uint32_t m_nChallengeNr;        //0x00A0
-    char pad1[100];					//0x00A4
-    uint32_t m_nSignonState;        //0x0108
-    char pad2[8];					//0x010C
-    float m_flNextCmdTime;          //0x0114
-    uint32_t m_nServerCount;        //0x0118
-    uint32_t m_nCurrentSequence;    //0x011C
-    char pad3[8];					//0x0120
-    CClockDriftMgr m_ClockDriftMgr; //0x0128
-    uint32_t m_nDeltaTick;          //0x0174
-    bool m_bPaused;                 //0x0178
-    char pad4[3];					//0x017D
-    uint32_t m_nViewEntity;         //0x0180
-    uint32_t m_nPlayerSlot;         //0x0184
-    char m_szLevelName[260];        //0x0188
-    char m_szLevelNameShort[80];    //0x028C
-    char m_szGroupName[80];         //0x02DC
-    char pad5[92];					//0x032Ñ
-    uint32_t m_nMaxClients;         //0x0388
-    char pad6[18824];				//0x0314
-    float m_flLastServerTickTime;   //0x4C98
-    bool insimulation;              //0x4C9C
-    char pad7[3];					//0x4C9D
-    uint32_t oldtickcount;          //0x4CA0
-    float m_tickRemainder;          //0x4CA4
-    float m_frameTime;              //0x4CA8
-    int lastoutgoingcommand;        //0x4CAC
-    int chokedcommands;             //0x4CB0
-    int last_command_ack;           //0x4CB4
-    int command_ack;                //0x4CB8
-    int m_nSoundSequence;           //0x4CBC
-    char pad8[80];					//0x4CC0
-    QAngle viewangles;              //0x4D10
-    char pad9[220];
-    CEventInfo* events;
+	std::byte		pad0[0x9C];				// 0x0000
+	NetChannel* pNetChannel;			// 0x009C
+	int				iChallengeNr;			// 0x00A0
+	std::byte		pad1[0x64];				// 0x00A4
+	int				iSignonState;			// 0x0108
+	std::byte		pad2[0x8];				// 0x010C
+	float			flNextCmdTime;			// 0x0114
+	int				nServerCount;			// 0x0118
+	int				iCurrentSequence;		// 0x011C
+	std::byte		pad3[0x54];				// 0x0120
+	int				iDeltaTick;				// 0x0174
+	bool			bPaused;				// 0x0178
+	std::byte		pad4[0x7];				// 0x0179
+	int				iViewEntity;			// 0x0180
+	int				iPlayerSlot;			// 0x0184
+	char			szLevelName[MAX_PATH];	// 0x0188
+	char			szLevelNameShort[80];	// 0x028C
+	char			szMapGroupName[80];		// 0x02DC
+	char			szLastLevelNameShort[80]; // 0x032C
+	std::byte		pad5[0xC];				// 0x037C
+	int				nMaxClients;			// 0x0388 
+	std::byte		pad6[0x498C];			// 0x038C
+	float			flLastServerTickTime;	// 0x4D18
+	bool			bInSimulation;			// 0x4D1C
+	std::byte		pad7[0x3];				// 0x4D1D
+	int				iOldTickcount;			// 0x4D20
+	float			flTickRemainder;		// 0x4D24
+	float			flFrameTime;			// 0x4D28
+	int				iLastOutgoingCommand;	// 0x4D2C
+	int				nChokedCommands;		// 0x4D30
+	int				iLastCommandAck;		// 0x4D34
+	int				iCommandAck;			// 0x4D38
+	int				iSoundSequence;			// 0x4D3C
+	std::byte		pad8[0x50];				// 0x4D40
+	QAngle			angViewPoint;			// 0x4D90
+	std::byte		pad9[0xD0];				// 0x4D9C
+	CEventInfo* pEvents;				// 0x4E6C
 };
 extern CClientState* g_pClientState;
 
@@ -569,13 +575,13 @@ public:
 
 class CLC_Move {
 private:
-    char __PAD0[0x8]; // 0x0 two vtables
+    char __PAD0[0xC]; // 0x0 two vtables
 public:
-    int m_nBackupCommands; // 0x8
-    int m_nNewCommands;    // 0xC
-    std::string* m_data;   // 0x10 std::string
-    bf_read m_DataIn;      // 0x14
-    bf_write m_DataOut;    // 0x38
+    int m_nBackupCommands; // 0xC
+    int m_nNewCommands;    // 0x10
+    unsigned char* m_data;   // 0x14
+    bf_read m_DataIn;      // 0x18
+    bf_write m_DataOut;    // 0x3C
 };
 
 class INetMessage

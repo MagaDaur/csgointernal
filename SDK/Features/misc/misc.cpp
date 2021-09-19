@@ -1,33 +1,38 @@
 #include "misc.h"
-#include "ICVar.h"
-
-#include "CBaseEntity.h"
-#include "CInput.h"
-#include "Math.h"
+#include "..\..\Utils\Math.h"
+#include "..\\..\\SDK\CBaseEntity.h"
+#include "..\\..\\SDK\CInput.h"
+#include "..\\..\SDK\ICVar.h"
+#include "..\..\Settings.h"
+#include "..\..\SDK\IClientEntityList.h"
 #include <math.h>
 
-void CMisc::OnPrePrediction(CBaseEntity* local, CUserCmd* cmd, bool* bSendPackets)
+void CMisc::OnPrePrediction(CUserCmd* cmd, bool* bSendPackets)
 {
-	Bhop(local, cmd);
-	FakeLag(local, cmd);
+	pLocalPlayer = g_pEntityList->GetClientEntity(g_pEngine->GetLocalPlayer());
+	if (!pLocalPlayer) return;
+
+	pCmd = cmd;
+
+	Bhop();
+	FakeLag();
 
 	*bSendPackets = bFakelagState;
 }
 
-void CMisc::Bhop(CBaseEntity* local, CUserCmd* cmd)
+void CMisc::OnPrediction()
 {
-	if(cmd->buttons & IN_JUMP && (local->GetFlags() & FL_ONGROUND) == 0)
-	{
-		cmd->buttons &= ~IN_JUMP;
-		
-		AutoStrafe(local, cmd);
-	}
+	AutoStrafe();
 }
 
-void CMisc::FakeLag(CBaseEntity* local, CUserCmd* cmd)
+void CMisc::Bhop()
 {
-	static ConVar* sv_maxusrcmdprocessticks = g_pCvar->FindVar("sv_maxusrcmdprocessticks");
-	if(iChokedPackets < sv_maxusrcmdprocessticks->GetInt() - 2)
+	if((pLocalPlayer->GetFlags() & FL_ONGROUND) == 0) pCmd->buttons &= ~IN_JUMP;
+}
+
+void CMisc::FakeLag()
+{
+	if(iChokedPackets <= g_Settings.FakeLag)
 	{
 		iChokedPackets++;
 		bFakelagState = false;
@@ -39,23 +44,25 @@ void CMisc::FakeLag(CBaseEntity* local, CUserCmd* cmd)
 	}
 }
 
-void CMisc::AutoStrafe(CBaseEntity* local, CUserCmd* cmd)
+void CMisc::AutoStrafe()
 {
-	static ConVar* sv_airaccelerate = g_pCvar->FindVar("sv_airaccelerate");
-	float airaccelerate_factor = Math.Clamp(sv_airaccelerate->GetInt() / 100.f, 0.f, 1.f);
+	if (pLocalPlayer->GetFlags() & FL_ONGROUND) return;
 
-	Vector velocity = local->GetVelocity();
+	Vector velocity = pLocalPlayer->GetVelocity();
 	float velocity_direction = Math.VectorToAngle(velocity).y;
 
-	Vector move = Vector(cmd.forwardmove, cmd.sidemove, 0);
-	float move_direction = cmd->viewangles.y + Math.VectorToAngle(move).y;
+	Vector move = Vector(pCmd->forwardmove, pCmd->sidemove, 0);
+	float move_direction = pCmd->viewangles.y - Math.VectorToAngle(move).y;
 
 	float direction_delta = Math.NormalizeFloat(move_direction - velocity_direction);
-	float ideal_step = Math.Clamp(RAD2DEG(asinf(30.f / velocity.Length2D())) * airaccelerate_factor, 0, 45.f);
+	float ideal_strafe = RAD2DEG(asinf(30.f / velocity.Length2D()));
+	float new_direction = velocity_direction + Math.Clamp(direction_delta, -ideal_strafe, ideal_strafe);
 
-	float new_direction = velocity_direction + Math.Clamp(direction_delta, 0.f, ideal_step);
+	if(pCmd->command_number % 2 == 0) new_direction += 89.f; else new_direction -= 89.f;
+
+	new_direction = Math.NormalizeFloat(pCmd->viewangles.y - new_direction);
 	Vector new_move = Math.AngleToVector(QAngle(0.f, new_direction, 0.f));
 
-	cmd->forwardmove = new_move.x * 450.f;
-	cmd->sidemove = new_move.y * 450.f;
+	pCmd->forwardmove = new_move.x * 450.f;
+	pCmd->sidemove = new_move.y * 450.f;
 }

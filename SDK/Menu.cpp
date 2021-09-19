@@ -78,8 +78,8 @@ void Menu::Render()
 
 					ImGui::Checkbox(("Enable"), &g_Settings.AntiAimEnable);
 					ImGui::Checkbox(("Desync"), &g_Settings.DesyncEnable);
-					ImGui::SliderInt("Fake Amount", &g_Settings.FakeAmount, 0, 100, "%.0f");
-					ImGui::SliderInt("Fake Lag", &g_Settings.FakeLag, 1, 14, "%.0f");
+					ImGui::SliderInt("Fake Amount", &g_Settings.FakeAmount, -120, 120, "%.0f");
+					ImGui::SliderInt("Fake Lag", &g_Settings.FakeLag, 1, 15, "%.0f");
 				}
 			}
 			break;

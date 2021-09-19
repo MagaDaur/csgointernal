@@ -77,7 +77,7 @@ public:
     virtual void SetViewAngles(Vector& ang);//
 
     virtual void GetLocalViewAngles(Vector& ang);//
-    virtual void SetLocalViewAngles(Vector& ang);//
+    virtual void SetLocalViewAngles(QAngle& ang);//
 
     virtual bool InPrediction(void) const;//14
     virtual bool IsFirstTimePredicted(void) const;//
