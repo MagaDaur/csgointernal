@@ -1,5 +1,5 @@
-#include "ragebot.h"
-#include "Vector.h"
+#include "..\ragebot\ragebot.h"
+#include "..\..\SDK\Vector.h"
 class CLegitBot : protected CRageBot
 {
 public:

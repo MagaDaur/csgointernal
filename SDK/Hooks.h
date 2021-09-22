@@ -45,6 +45,7 @@ extern SetupBonesFn oSetupBones;
 extern CL_MoveFn oCL_Move;
 extern CL_SendMoveFn oCL_SendMove;
 extern CheckForSequenceChangeFn oCheckForSequenceChange;
+extern UpdateClientSideAnimationFn oUpdateClientSideAnimation;
 
 
 class VMTHook;
@@ -85,6 +86,7 @@ public:
 	static void __cdecl hkCL_SendMove();
 	static int __fastcall hkSendDatagram(NetChannel*, void*, bf_write*);
 	static void __fastcall hkCheckForSequenceChange(void*, void*, void*, int, bool, bool);
+	static void __fastcall hkUpdateClientSideAnimation(CBaseEntity*, void*);
 
 
 private:

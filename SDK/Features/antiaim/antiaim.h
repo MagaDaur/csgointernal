@@ -1,5 +1,5 @@
-#include "Vector.h"
-#include "CCSGOAnimationState.h"
+#include "..\..\SDK\Vector.h"
+#include "..\..\SDK\CCSGOAnimationState.h"
 
 class CBaseEntity;
 class CUserCmd;

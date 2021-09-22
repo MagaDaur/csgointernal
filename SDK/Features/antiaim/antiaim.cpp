@@ -1,10 +1,10 @@
 #include "antiaim.h"
-#include "CBaseEntity.h"
-#include "CInput.h"
-#include "CPrediction.h"
-#include "Settings.h"
-#include "IClientMode.h"
-#include "IClientEntityList.h"
+#include "..\..\SDK\CBaseEntity.h"
+#include "..\..\SDK\CInput.h"
+#include "..\..\SDK\CPrediction.h"
+#include "..\..\Settings.h"
+#include "..\..\SDK\IClientMode.h"
+#include "..\..\SDK\IClientEntityList.h"
 
 void CAntiAim::OnPrediction(CUserCmd* cmd, bool* bSendPackets)
 {
@@ -31,6 +31,7 @@ void CAntiAim::OnPrediction(CUserCmd* cmd, bool* bSendPackets)
 
 	Math.NormalizeAngles(pCmd->viewangles);
 	angCurrent = pCmd->viewangles;
+
 	*bSendPackets = bFakeLagState;
 
 	CorrectMovement();
@@ -98,8 +99,8 @@ bool CAntiAim::LowerBodyYawUpdate()
 	else
 	{
 		flLowerbodyTimer = g_pGlobalVars->curtime + 0.22f;
-		return false;
 	}
+	return false;
 }
 
 void CAntiAim::CorrectMovement()

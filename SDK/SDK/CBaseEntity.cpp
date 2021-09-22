@@ -18,6 +18,18 @@ template<typename T> T CBaseEntity::GetProp(std::string name)
 	return *(T*)(uintptr_t(this) + offset);
 }
 
+Vector& CBaseEntity::GetMaxs()
+{
+	static auto m_vecMaxs = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecMaxs");
+	return *(Vector*)(uintptr_t(this) + m_vecMaxs);
+}
+
+Vector& CBaseEntity::GetMins()
+{
+	static auto m_vecMins = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecMins");
+	return *(Vector*)(uintptr_t(this) + m_vecMins);
+}
+
 bool& CBaseEntity::JiggleEnabled()
 {
 	static auto m_hLightingOrigin = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_hLightingOrigin") - 0x18;

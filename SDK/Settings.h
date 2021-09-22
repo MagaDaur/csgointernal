@@ -33,7 +33,7 @@ public:
     int HitChance = 0.0f;
     bool AntiAimEnable = false;
     bool DesyncEnable = false;
-    int FakeLag = 1;
+    int FakeLag = 0;
     int FakeAmount = 0;
 
     //MISC

@@ -38,6 +38,7 @@ NetvarTree g_Netvars;
 CRageBot g_RageBot;
 CAntiAim g_AntiAim;
 CMisc g_Misc;
+CLagComp g_LagComp;
 
 extern IMGUI_API LRESULT ImGui_ImplDX9_WndProcHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam);
 void WriteUsercmd(void* buf, CUserCmd* to, CUserCmd* from);
@@ -49,6 +50,7 @@ SetupBonesFn oSetupBones;
 CL_MoveFn oCL_Move;
 CL_SendMoveFn oCL_SendMove;
 CheckForSequenceChangeFn oCheckForSequenceChange;
+UpdateClientSideAnimationFn oUpdateClientSideAnimation;
 
 void Hooks::Init()
 {
@@ -119,6 +121,9 @@ void Hooks::Init()
 
 	DWORD* dwCheckForSequenceChange = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 51 53 8B 5D 08 56 8B F1 57 85");
 	oCheckForSequenceChange = (CheckForSequenceChangeFn)DetourFunction((PBYTE)dwCheckForSequenceChange, (PBYTE)Hooks::hkCheckForSequenceChange);
+
+	DWORD* dwUpdateClientSideAnimation = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 51 56 8B F1 80 BE ? ? ? ? ? 74");
+	oUpdateClientSideAnimation = (UpdateClientSideAnimationFn)DetourFunction((PBYTE)dwUpdateClientSideAnimation, (PBYTE)Hooks::hkUpdateClientSideAnimation);
 	
 	Utils::Log( "Hooking completed!" );
 }
@@ -133,6 +138,7 @@ void Hooks::Restore()
 		DetourRemove((PBYTE)oCL_Move, (PBYTE)Hooks::hkCL_Move);
 		DetourRemove((PBYTE)oCL_SendMove, (PBYTE)Hooks::hkCL_SendMove);
 		DetourRemove((PBYTE)oCheckForSequenceChange, (PBYTE)Hooks::hkCheckForSequenceChange);
+		DetourRemove((PBYTE)oUpdateClientSideAnimation, (PBYTE)Hooks::hkUpdateClientSideAnimation);
 
 		g_Hooks.pEventHook->Unhook(vtable_indexes::firegamevent);
 		g_Hooks.pClientHook->Unhook(24);
@@ -172,6 +178,16 @@ void __cdecl Hooks::hkCL_Move(float time, bool finaltick)
 void __cdecl Hooks::hkCL_SendMove()
 {
 	oCL_SendMove();
+}
+
+void __fastcall Hooks::hkUpdateClientSideAnimation(CBaseEntity* player, void* edx)
+{
+	if (g_LagComp.bShouldAnimate)
+	{
+		oUpdateClientSideAnimation(player);
+
+		g_LagComp.bShouldAnimate = false;
+	}
 }
 
 void __fastcall Hooks::hkRunCommand(void* ecx, void* edx, CBaseEntity* player, CUserCmd* cmd, IMoveHelper* moveHelper) {
@@ -274,14 +290,16 @@ void __fastcall Hooks::PaintTraverse(IPanel* panel, int edx, unsigned int vguiPa
 bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_frametime, CUserCmd* cmd)
 {
 	static auto oCreateMove = g_Hooks.pClientModeHook->GetOriginal<CreateMove_t>(24);
-	oCreateMove(thisptr, edx, sample_frametime, cmd);
+	bool ret = oCreateMove(thisptr, edx, sample_frametime, cmd);
 
-	if (!cmd || !cmd->command_number) return false;
+	if (!cmd || !cmd->command_number) return ret;
 
 	uintptr_t* fptr; __asm mov fptr, ebp
 	bool* bSendPackets = (bool*)(*fptr - 0x1C);
 
-	if (!bSendPackets) return false;
+	if (!bSendPackets) return ret;
+
+	*bSendPackets = true;
 
 	if (g_Settings.bMenuOpened)
 	{
@@ -344,6 +362,7 @@ void __fastcall Hooks::FrameStageNotify(void* ecx, void* edx, int curStage)
 	static auto oFrameStage = g_Hooks.pClientHook->GetOriginal<FrameStageNotify_t>(vtable_indexes::frameStage);
 
 	g_AntiAim.OnFrameStage(curStage);
+	g_LagComp.OnFrameStage(curStage);
 
 	oFrameStage(ecx, curStage);
 }
@@ -351,6 +370,15 @@ void __fastcall Hooks::FrameStageNotify(void* ecx, void* edx, int curStage)
 void __fastcall Hooks::DME(void* ecx, void* edx, IMatRenderContext* context, const DrawModelState_t& state, const ModelRenderInfo_t& render_info, matrix3x4_t* matrix)
 {
 	static auto oDME = g_Hooks.pDMEHook->GetOriginal<DrawModelExecute_t>(vtable_indexes::dme);
+
+	CBaseEntity* entity = g_pEntityList->GetClientEntity(render_info.entity_index);
+	if (entity && entity->IsPlayer() && entity->IsAlive())
+	{
+		for (auto& record : *g_LagComp.GetRecords(entity))
+		{
+			//oDME(ecx, context, state, render_info, record.matrix);
+		}
+	}
 
 	oDME(ecx, context, state, render_info, matrix);
 }
@@ -369,8 +397,8 @@ void __fastcall Hooks::BeginFrame( void *thisptr, void*, float ft )
 	oBeginFrame( thisptr, ft );
 }
 
-void Hooks::InitIMGUI(IDirect3DDevice9* pDevice) {
-
+void Hooks::InitIMGUI(IDirect3DDevice9* pDevice) 
+{
 	ImGui_ImplDX9_Init(g_Hooks.hCSGOWindow, pDevice);
 	ImGuiStyle& style = ImGui::GetStyle();
 	auto& Colors = style.Colors;

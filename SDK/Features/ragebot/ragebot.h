@@ -1,5 +1,6 @@
+#include "..\..\SDK\CInput.h"
+
 class CBaseEntity;
-class CUserCmd;
 class CBaseCombatWeapon;
 
 class CRageBot
@@ -12,6 +13,17 @@ protected:
 	
 private:
 	bool bFakeLagState = true;
+
+	struct exploit_t
+	{
+		bool bCharged;
+		bool bShouldCharge;
+		float flChrageAmount;
+
+		CUserCmd lastcmd;
+
+		int iShiftAmount;
+	}Exploits;
 
 	CUserCmd* pCmd;
 	CBaseEntity* pLocalPlayer;

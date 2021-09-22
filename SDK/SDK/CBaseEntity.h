@@ -44,6 +44,10 @@ public:
 
 	matrix3x4_t*& GetBoneArrayForWrite();
 
+	Vector& GetMins();
+
+	Vector& GetMaxs();
+
 	float SpawnTime();
 
 	int& GetEffects();
