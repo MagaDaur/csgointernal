@@ -11,7 +11,8 @@ unsigned int CBaseCombatWeapon::GetItemDefinitionIndex()
 
 WeaponInfo_t* CBaseCombatWeapon::GetWeaponInfo()
 {
-	return g_pWeaponSys->GetWpnData(GetItemDefinitionIndex());
+	//return g_pWeaponSys->GetWpnData(GetItemDefinitionIndex());
+	return Utils::CallVFunc<461, WeaponInfo_t*>(this);
 }
 
 float& CBaseCombatWeapon::GetNextPrimaryAttack()
@@ -34,7 +35,7 @@ int CBaseCombatWeapon::GetAmmo()
 
 bool CBaseCombatWeapon::IsGrenade() {
 	auto wpninfo = this->GetWeaponInfo();
-	return (wpninfo->weapon_type == WEAPONTYPE_GRENADE);
+	return (wpninfo->weaponType == WEAPONTYPE_GRENADE);
 }
 
 bool CBaseCombatWeapon::IsPinPulled() {
@@ -47,11 +48,11 @@ float CBaseCombatWeapon::ThrowTime() {
 	return *(float*)(uintptr_t(this) + m_fThrowTime);
 }
 float CBaseCombatWeapon::GetSpread() {
-	return Utils::CallVFunc<452, float>(this);
+	return Utils::CallVFunc<453, float>(this);
 }
 
 float CBaseCombatWeapon::GetInaccuracy() {
-	return Utils::CallVFunc<482, float>(this);
+	return Utils::CallVFunc<483, float>(this);
 }
 float CBaseCombatWeapon::GetAccuracyPenalty() {
 	static int m_fAccuracyPenalty = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_fAccuracyPenalty");

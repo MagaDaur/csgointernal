@@ -36,4 +36,4 @@ private:
 	CBaseEntity* pLocalPlayer;
 };
 
-extern CAntiAim g_AntiAim;
+inline CAntiAim g_AntiAim;

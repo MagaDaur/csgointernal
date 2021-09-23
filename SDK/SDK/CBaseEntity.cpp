@@ -18,22 +18,24 @@ template<typename T> T CBaseEntity::GetProp(std::string name)
 	return *(T*)(uintptr_t(this) + offset);
 }
 
-Vector& CBaseEntity::GetMaxs()
+uintptr_t CBaseEntity::GetOffset(std::string name)
 {
-	static auto m_vecMaxs = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecMaxs");
-	return *(Vector*)(uintptr_t(this) + m_vecMaxs);
+	ClientClass* clientclass = this->GetClientClass();
+
+	return g_Netvars.GetProp(clientclass->pNetworkName, name);
 }
 
-Vector& CBaseEntity::GetMins()
+float& CBaseEntity::GetDuckAmount()
 {
-	static auto m_vecMins = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecMins");
-	return *(Vector*)(uintptr_t(this) + m_vecMins);
+	static uintptr_t m_flDuckAmount = GetOffset("m_flDuckAmount");
+
+	return *(float*)(uintptr_t(this) + m_flDuckAmount);
 }
 
 bool& CBaseEntity::JiggleEnabled()
 {
-	static auto m_hLightingOrigin = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_hLightingOrigin") - 0x18;
-	return *(bool*)(uintptr_t(this) + m_hLightingOrigin);
+	static auto m_bJiggleBones = 0x2930;
+	return *(bool*)(uintptr_t(this) + m_bJiggleBones);
 }
 
 AnimationLayer* CBaseEntity::GetAnimLayers() {
@@ -41,7 +43,7 @@ AnimationLayer* CBaseEntity::GetAnimLayers() {
 }
 
 CBaseCombatWeapon* CBaseEntity::GetActiveWeapon() {
-	return reinterpret_cast<CBaseCombatWeapon*>(g_pEntityList->GetClientEntityFromHandle(GetActiveWeaponHandle()));
+	return Utils::CallVFunc<268, CBaseCombatWeapon*>(this);
 }
 
 CBaseEntity* CBaseEntity::GetGroundEntity()
@@ -105,9 +107,9 @@ uint32_t& CBaseEntity::GetWritableBones()
 	return *(uint32_t*)((DWORD)this + 0x26B0);
 }
 
-matrix3x4_t*& CBaseEntity::GetBoneArrayForWrite()
+matrix3x4_t*& CBaseEntity::GetBoneMatrix()
 {
-	return *(matrix3x4_t**)((DWORD)this + 0x26A8);
+	return *(matrix3x4_t**)(uintptr_t(this) + 0x26A8);
 }
 
 float CBaseEntity::SpawnTime() {
@@ -122,8 +124,7 @@ int& CBaseEntity::GetEffects()
 }
 
 bool CBaseEntity::IsPlayer() {
-	typedef bool(__thiscall* IsPlayerfn)(void*);
-	return Utils::GetVFunc<IsPlayerfn>(this, 157)(this);
+	return Utils::CallVFunc<158, bool>(this);
 }
 
 bool CBaseEntity::IsScoped() {
@@ -138,19 +139,23 @@ void CBaseEntity::ClientAnimations(bool toggle) {
 
 void CBaseEntity::UpdateClientAnimation()
 {
-	Utils::GetVFunc<void(__thiscall*)(void*)>(this, 223)(this);
+	Utils::CallVFunc<224>(this);
 }
 
 float* CBaseEntity::GetPoseParameters() {
 	static auto m_flPoseParameter = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flPoseParameter");
 	return (float*)((DWORD)this + 10100);
 }
-DWORD CBaseEntity::GetActiveWeaponHandle() {
-		static auto m_hActiveWeapon = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_hActiveWeapon");
-		return *(DWORD*)(uintptr_t(this) + m_hActiveWeapon);
-	}
+
 float& CBaseEntity::GetLowerBodyYaw() {
 	return *(float*)(DWORD(this) + 0x3A90);
+}
+
+bool CBaseEntity::IsLocalPlayer()
+{
+	CBaseEntity* localplayer = g_pEntityList->GetLocalPlayer();
+	if (!localplayer) return false;
+	return this == localplayer;
 }
 
 int CBaseEntity::GetTeam() {
@@ -177,7 +182,7 @@ int CBaseEntity::GetMoney() {
 	return *(int*)(uintptr_t(this) + m_iAccount);
 }
 
-QAngle& CBaseEntity::GetAngEyeAngles() {
+QAngle& CBaseEntity::GetEyeAngles() {
 	static auto m_angEyeAngles = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_angEyeAngles");
 	return *(QAngle*)(DWORD(this) + m_angEyeAngles);
 }
@@ -185,7 +190,7 @@ QAngle& CBaseEntity::GetAngEyeAngles() {
 Vector& CBaseEntity::GetVelocity()
 {
 	static auto m_vecVelocity = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecVelocity[0]");
-	return *(Vector*)((DWORD)this + 0x114);
+	return *(Vector*)((DWORD)this + m_vecVelocity);
 }
 
 int CBaseEntity::HitBoxSet() {
@@ -264,7 +269,9 @@ QAngle CBaseEntity::GetPunchAngles()
 
 Vector CBaseEntity::GetEyePosition()
 {
-	return this->GetOrigin() + this->GetViewOffset();
+	Vector ret;
+	Utils::CallVFunc<169, void, Vector&>(this, ret);
+	return ret;
 }
 
 int CBaseEntity::GetArmor()
@@ -316,4 +323,11 @@ QAngle& CBaseEntity::GetAbsAngles() {
 }
 Vector& CBaseEntity::GetAbsOrigin() {
 	return Utils::CallVFunc<10, Vector&>(this);
+}
+
+bool CBaseEntity::IsTeamMate()
+{
+	CBaseEntity* localplayer = g_pEntityList->GetLocalPlayer();
+	if (!localplayer) return false;
+	return localplayer->GetTeam() == GetTeam();
 }

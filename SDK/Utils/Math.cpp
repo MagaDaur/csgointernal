@@ -133,6 +133,7 @@ void CMath::NormalizeAngles(QAngle& angles)
 		while (angles[i] > 180.0f) angles[i] -= 360.0f;
 	}
 }
+
 Vector CMath::ExtrapolateTick(Vector p0, Vector v0) {
 	return p0 + (v0 * g_pGlobalVars->intervalPerTick);
 }

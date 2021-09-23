@@ -1,6 +1,7 @@
-#include "..\ragebot\ragebot.h"
 #include "..\..\SDK\Vector.h"
-class CLegitBot : protected CRageBot
+#include "../ragebot/ragebot.h"
+
+class CLegitBot : CRageBot
 {
 public:
     void OnPrediction(CUserCmd*);
@@ -13,6 +14,8 @@ private:
     
     CUserCmd* pCmd;
     CBaseEntity* pLocalPlayer;
+	WeaponInfo_t* pWeaponInfo;
+	CBaseCombatWeapon* pWeapon;
 };
 
-extern CLegitBot g_LegitBot;
+inline CLegitBot g_LegitBot;

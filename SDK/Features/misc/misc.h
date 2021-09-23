@@ -17,4 +17,4 @@ private:
 	CUserCmd* pCmd;
 };
 
-extern CMisc g_Misc;
+inline CMisc g_Misc;

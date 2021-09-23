@@ -5,6 +5,7 @@
 #include "..\..\Settings.h"
 #include "..\..\SDK\IClientMode.h"
 #include "..\..\SDK\IClientEntityList.h"
+#include "../../SDK/Studio.h"
 
 void CAntiAim::OnPrediction(CUserCmd* cmd, bool* bSendPackets)
 {

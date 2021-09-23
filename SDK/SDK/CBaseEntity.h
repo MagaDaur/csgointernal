@@ -19,6 +19,15 @@ class CBaseEntity : public IClientUnknown, public IClientRenderable, public ICli
 {
 public:
 	template<typename T> T GetProp(std::string name);
+	uintptr_t GetOffset(std::string name);
+
+	bool IsTeamMate();
+
+	float& GetDuckAmount();
+
+	matrix3x4_t*& GetBoneMatrix();
+
+	bool IsLocalPlayer();
 
 	bool& JiggleEnabled();
 
@@ -43,10 +52,6 @@ public:
 	uint32_t& GetWritableBones();
 
 	matrix3x4_t*& GetBoneArrayForWrite();
-
-	Vector& GetMins();
-
-	Vector& GetMaxs();
 
 	float SpawnTime();
 
@@ -76,7 +81,7 @@ public:
 
 	int GetMoney();
 
-	QAngle& GetAngEyeAngles();
+	QAngle& GetEyeAngles();
 
 	Vector& GetVelocity();
 

@@ -112,6 +112,7 @@
     <ClCompile Include="SDK\SDK\CBaseCombatWeapon.cpp" />
     <ClCompile Include="SDK\SDK\CBaseEntity.cpp" />
     <ClCompile Include="SDK\SDK\CCSGOAnimationState.cpp" />
+    <ClCompile Include="SDK\SDK\IClientEntityList.cpp" />
     <ClCompile Include="SDK\Utils\D3DFont.cpp" />
     <ClCompile Include="SDK\Utils\DrawManager.cpp" />
     <ClCompile Include="SDK\Utils\GlobalVars.cpp" />

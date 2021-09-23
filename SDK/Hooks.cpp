@@ -17,7 +17,7 @@
 #include "SDK/IClientEntityList.h"
 #include "SDK/CBaseCombatWeapon.h"
 
-#include "Features/ragebot/ragebot.h"
+#include "Features/legitbot/legitbot.h"
 #include "Features/misc/misc.h"
 #include "Features/lagcomp/lagcomp.h"
 #include "Features/visuals/visuals.h"
@@ -34,11 +34,6 @@
 Settings g_Settings;
 Hooks g_Hooks;
 NetvarTree g_Netvars;
-
-CRageBot g_RageBot;
-CAntiAim g_AntiAim;
-CMisc g_Misc;
-CLagComp g_LagComp;
 
 extern IMGUI_API LRESULT ImGui_ImplDX9_WndProcHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam);
 void WriteUsercmd(void* buf, CUserCmd* to, CUserCmd* from);
@@ -107,16 +102,16 @@ void Hooks::Init()
 	DWORD* dwDoExtraBoneProcessing = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 83 E4 F8 81 EC ? ? ? ? 53 56 8B F1 57 89 74 24 1C");
 	oDoExtraBoneProcessing = (DoExtraBoneProcessingFn)DetourFunction((PBYTE)dwDoExtraBoneProcessing, (PBYTE)Hooks::hkDoExtraBoneProcessing);
 
-	DWORD* dwBuildTransformations = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 83 E4 F0 81 EC ? ? ? ? 56 57 8B F9 8B 0D ? ? ? ? 89 7C 24 1C");
+	DWORD* dwBuildTransformations = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 83 E4 F0 81 EC ? ? ? ? 56 57 8B F9 8B 0D ? ? ? ? 89 7C 24 28");
 	oBuildTransformations = (BuildTransformationsFn)DetourFunction((PBYTE)dwBuildTransformations, (PBYTE)Hooks::hkBuildTransformations);
 
 	DWORD* dwStandardBlendingRules = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 83 E4 F0 B8 ? ? ? ? E8 ? ? ? ? 56 8B 75 08 57 8B F9 85 F6");
 	oStandardBlendingRules = (StandardBlendingRulesFn)DetourFunction((PBYTE)dwStandardBlendingRules, (PBYTE)Hooks::hkStandardBlendingRules);
 
-	DWORD* dwCL_Move = (DWORD*)Utils::FindSignature("engine.dll", "55 8B EC 81 EC ? ? ? ? 53 56 57 8B 3D ? ? ? ? 8A F9");
+	DWORD* dwCL_Move = (DWORD*)Utils::FindSignature("engine.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8A F9");
 	oCL_Move = (CL_MoveFn)DetourFunction((PBYTE)dwCL_Move, (PBYTE)Hooks::hkCL_Move);
 
-	DWORD* dwCL_SendMove = (DWORD*)Utils::FindSignature("engine.dll", "55 8B EC A1 ? ? ? ? 81 EC ? ? ? ? B9 ? ? ? ? 53 8B 98");
+	DWORD* dwCL_SendMove = (DWORD*)Utils::FindSignature("engine.dll", "55 8B EC 8B 4D 04 81");
 	oCL_SendMove = (CL_SendMoveFn)DetourFunction((PBYTE)dwCL_SendMove, (PBYTE)Hooks::hkCL_SendMove);
 
 	DWORD* dwCheckForSequenceChange = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 51 53 8B 5D 08 56 8B F1 57 85");
@@ -125,6 +120,8 @@ void Hooks::Init()
 	DWORD* dwUpdateClientSideAnimation = (DWORD*)Utils::FindSignature("client.dll", "55 8B EC 51 56 8B F1 80 BE ? ? ? ? ? 74");
 	oUpdateClientSideAnimation = (UpdateClientSideAnimationFn)DetourFunction((PBYTE)dwUpdateClientSideAnimation, (PBYTE)Hooks::hkUpdateClientSideAnimation);
 	
+	g_pClientState->iDeltaTick = -1;
+
 	Utils::Log( "Hooking completed!" );
 }
 void Hooks::Restore()
@@ -182,7 +179,7 @@ void __cdecl Hooks::hkCL_SendMove()
 
 void __fastcall Hooks::hkUpdateClientSideAnimation(CBaseEntity* player, void* edx)
 {
-	if (g_LagComp.bShouldAnimate)
+	if (g_LagComp.bShouldAnimate || player->IsLocalPlayer())
 	{
 		oUpdateClientSideAnimation(player);
 
@@ -266,7 +263,7 @@ void __fastcall Hooks::hkStandardBlendingRules(CBaseEntity* player, uint32_t edx
 
 void __fastcall Hooks::hkBuildTransformations(CBaseEntity* player, uint32_t edx, c_studio_hdr* hdr, Vector* pos, Quaternion* q, const matrix3x4_t& cameraTransform, int boneMask, uint8_t* boneComputed)
 {
-	//player->JiggleEnabled() = false;
+	player->JiggleEnabled() = false;
 
 	oBuildTransformations(player, hdr, pos, q, cameraTransform, boneMask, boneComputed);
 }
@@ -301,18 +298,10 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 
 	*bSendPackets = true;
 
-	if (g_Settings.bMenuOpened)
-	{
-		cmd->buttons = 0;
-		cmd->forwardmove = 0.f;
-		cmd->sidemove = 0.f;
-	}
-
 	g_Misc.OnPrePrediction(cmd, bSendPackets);
 
-	engine_prediction::RunEnginePred(cmd);
-	{
-		//legit here
+	engine_prediction::RunEnginePred(cmd); {
+		g_LegitBot.OnPrediction(cmd);
 
 		g_RageBot.OnPrediction(cmd, bSendPackets);
 
@@ -371,12 +360,15 @@ void __fastcall Hooks::DME(void* ecx, void* edx, IMatRenderContext* context, con
 {
 	static auto oDME = g_Hooks.pDMEHook->GetOriginal<DrawModelExecute_t>(vtable_indexes::dme);
 
-	CBaseEntity* entity = g_pEntityList->GetClientEntity(render_info.entity_index);
-	if (entity && entity->IsPlayer() && entity->IsAlive())
+	CBaseEntity* player = g_pEntityList->GetClientEntity(render_info.entity_index);
+	if (player && player->IsPlayer() && !player->IsLocalPlayer())
 	{
-		for (auto& record : *g_LagComp.GetRecords(entity))
+		auto records = g_LagComp.GetRecords(player);
+		if (records->size() > 1)
 		{
-			//oDME(ecx, context, state, render_info, record.matrix);
+			oDME(ecx, context, state, render_info, records->front().matrix);
+
+			oDME(ecx, context, state, render_info, records->back().matrix);
 		}
 	}
 

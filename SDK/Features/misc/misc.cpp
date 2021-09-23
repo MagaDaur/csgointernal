@@ -9,12 +9,14 @@
 
 void CMisc::OnPrePrediction(CUserCmd* cmd, bool* bSendPackets)
 {
+	cmd->buttons |= IN_BULLRUSH;
 	pLocalPlayer = g_pEntityList->GetClientEntity(g_pEngine->GetLocalPlayer());
 	if (!pLocalPlayer) return;
 
 	pCmd = cmd;
 
 	Bhop();
+	AutoStrafe();
 	FakeLag();
 
 	*bSendPackets = bFakelagState;
@@ -22,7 +24,7 @@ void CMisc::OnPrePrediction(CUserCmd* cmd, bool* bSendPackets)
 
 void CMisc::OnPrediction()
 {
-	AutoStrafe();
+	
 }
 
 void CMisc::Bhop()
@@ -46,7 +48,7 @@ void CMisc::FakeLag()
 
 void CMisc::AutoStrafe()
 {
-	if (pLocalPlayer->GetFlags() & FL_ONGROUND) return;
+	if (pLocalPlayer->GetFlags() & FL_ONGROUND || pLocalPlayer->GetMoveType() == MOVETYPE_NOCLIP || pLocalPlayer->GetMoveType() == MOVETYPE_LADDER) return;
 
 	Vector velocity = pLocalPlayer->GetVelocity();
 	float velocity_direction = Math.VectorToAngle(velocity).y;
@@ -58,7 +60,7 @@ void CMisc::AutoStrafe()
 	float ideal_strafe = RAD2DEG(asinf(30.f / velocity.Length2D()));
 	float new_direction = velocity_direction + Math.Clamp(direction_delta, -ideal_strafe, ideal_strafe);
 
-	if(pCmd->command_number % 2 == 0) new_direction += 89.f; else new_direction -= 89.f;
+	if(pCmd->command_number % 2 == 0) new_direction += 88.f; else new_direction -= 88.f;
 
 	new_direction = Math.NormalizeFloat(pCmd->viewangles.y - new_direction);
 	Vector new_move = Math.AngleToVector(QAngle(0.f, new_direction, 0.f));

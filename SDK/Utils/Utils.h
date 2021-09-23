@@ -14,7 +14,7 @@
 class Utils
 {
 public:
-    template<unsigned int IIdx, typename TRet, typename ... TArgs>
+    template<unsigned int IIdx, typename TRet = void, typename ... TArgs>
     static auto CallVFunc(void* thisptr, TArgs ... argList) -> TRet
     {
         using Fn = TRet(__thiscall*)(void*, decltype(argList)...);

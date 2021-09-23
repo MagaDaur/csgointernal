@@ -13,5 +13,6 @@ public:
     virtual int                   GetHighestEntityIndex(void) = 0;
     virtual void                  SetMaxEntities(int maxEnts) = 0;
     virtual int                   GetMaxEntities() = 0;
+	CBaseEntity* GetLocalPlayer();
 };
 extern IClientEntityList*  g_pEntityList;
