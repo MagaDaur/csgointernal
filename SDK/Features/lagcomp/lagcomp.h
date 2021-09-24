@@ -9,7 +9,6 @@ struct LagRecord
 {
 
 	float simtime;
-	float animtime;
 
 	Vector mins;
 	Vector maxs;

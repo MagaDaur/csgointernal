@@ -20,7 +20,7 @@ template<typename T> T CBaseEntity::GetProp(std::string name)
 
 uintptr_t CBaseEntity::GetOffset(std::string name)
 {
-	ClientClass* clientclass = this->GetClientClass();
+	ClientClass* clientclass = GetClientClass();
 
 	return g_Netvars.GetProp(clientclass->pNetworkName, name);
 }
@@ -34,12 +34,12 @@ float& CBaseEntity::GetDuckAmount()
 
 bool& CBaseEntity::JiggleEnabled()
 {
-	static auto m_bJiggleBones = 0x2930;
+	static auto m_bJiggleBones = 0x2930; // find sig!!!
 	return *(bool*)(uintptr_t(this) + m_bJiggleBones);
 }
 
 AnimationLayer* CBaseEntity::GetAnimLayers() {
-	return *(AnimationLayer**)(DWORD(this) + 0x2990);
+	return *(AnimationLayer**)(uintptr_t(this) + 0x2990); // find sig!!!
 }
 
 CBaseCombatWeapon* CBaseEntity::GetActiveWeapon() {
@@ -48,17 +48,16 @@ CBaseCombatWeapon* CBaseEntity::GetActiveWeapon() {
 
 CBaseEntity* CBaseEntity::GetGroundEntity()
 {
-	static auto m_hGroundEntity = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_hGroundEntity");
-	CBaseHandle hGroundEntity = *(CBaseHandle*)(m_hGroundEntity);
+	static auto m_hGroundEntity = GetOffset("m_hGroundEntity");
+	CBaseHandle hGroundEntity = *(CBaseHandle*)(uintptr_t(this) + m_hGroundEntity);
 	return reinterpret_cast<CBaseEntity*>(g_pEntityList->GetClientEntityFromHandle(hGroundEntity));
 }
 
-PVOID CBaseEntity::UTIL_PlayerByIndex()
+void* CBaseEntity::UTIL_PlayerByIndex()
 {
 	typedef void* (__fastcall* PlayerByIndex)(int);
 	static PlayerByIndex UTIL_PlayerByIndex = (PlayerByIndex)Utils::FindSignature("server.dll", "85 C9 7E 32 A1 ? ? ? ?");
-	if (!UTIL_PlayerByIndex)
-		return nullptr;
+
 	return UTIL_PlayerByIndex(EntIndex());
 }
 
@@ -71,25 +70,26 @@ std::string CBaseEntity::GetName()
 
 void CBaseEntity::DrawServerBox(float flDuration, bool bMonoColor)
 {
-	PVOID pEntity = UTIL_PlayerByIndex();
-	if (!pEntity)
-		return;
-	static DWORD Draw = Utils::FindSignature("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
-	__asm
+	static uintptr_t Draw = Utils::FindSignature("server.dll", "55 8B EC 81 EC ? ? ? ? 53 56 8B 35 ? ? ? ? 8B D9 57 8B CE");
+	void* pEntity = UTIL_PlayerByIndex();
+	if(pEntity)
 	{
-		pushad
-		movss xmm1, flDuration
-		push bMonoColor
-		mov ecx, pEntity
-		call Draw
-		popad
+		__asm
+		{
+			pushad
+			movss xmm1, flDuration
+			push bMonoColor
+			mov ecx, pEntity
+			call Draw
+			popad
+		}
 	}
 }
 
 float& CBaseEntity::GetVelocityModifier()
 {
-	static auto m_flVelocityModifier = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flVelocityModifier");
-	return *(float*)(DWORD(this) + m_flVelocityModifier);
+	static auto m_flVelocityModifier = GetOffset("m_flVelocityModifier");
+	return *(float*)(uintptr_t(this) + m_flVelocityModifier);
 }
 
 void CBaseEntity::SetModelIndex(int model)
@@ -97,30 +97,20 @@ void CBaseEntity::SetModelIndex(int model)
 	return Utils::CallVFunc<75, void>(this, model);
 }
 
-uint32_t& CBaseEntity::GetReadableBones()
-{
-	return *(uint32_t*)((DWORD)this + 0x26AC);
-}
-
-uint32_t& CBaseEntity::GetWritableBones()
-{
-	return *(uint32_t*)((DWORD)this + 0x26B0);
-}
-
 matrix3x4_t*& CBaseEntity::GetBoneMatrix()
 {
-	return *(matrix3x4_t**)(uintptr_t(this) + 0x26A8);
+	return *(matrix3x4_t**)(uintptr_t(this) + 0x26A8); // should find sig!!
 }
 
 float CBaseEntity::SpawnTime() {
-	static auto m_flSpawnTime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flSpawnTime");
-	return *(float*)(DWORD(this) + m_flSpawnTime);
+	static auto m_flSpawnTime = GetOffset("m_flSpawnTime");
+	return *(float*)(uintptr_t(this) + m_flSpawnTime);
 }
 
 int& CBaseEntity::GetEffects()
 {
-	static auto offset = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_fEffects");
-	return *(int*)(DWORD(this) + offset);
+	static auto m_fEffects = GetOffset("m_fEffects");
+	return *(int*)(uintptr_t(this) + m_fEffects);
 }
 
 bool CBaseEntity::IsPlayer() {
@@ -128,13 +118,13 @@ bool CBaseEntity::IsPlayer() {
 }
 
 bool CBaseEntity::IsScoped() {
-	static auto m_bIsScoped = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bIsScoped");
+	static auto m_bIsScoped = GetOffset("m_bIsScoped");
 	return *(bool*)(uintptr_t(this) + m_bIsScoped);
 }
 
-void CBaseEntity::ClientAnimations(bool toggle) {
-	static auto m_bClientAnimation = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bClientSideAnimation");
-	*(bool*)((DWORD)this + m_bClientAnimation) = toggle;
+bool& CBaseEntity::ClientAnimations() {
+	static auto m_bClientAnimation = GetOffset("m_bClientSideAnimation");
+	return *(bool*)((uintptr_t)this + m_bClientAnimation);
 }
 
 void CBaseEntity::UpdateClientAnimation()
@@ -143,12 +133,13 @@ void CBaseEntity::UpdateClientAnimation()
 }
 
 float* CBaseEntity::GetPoseParameters() {
-	static auto m_flPoseParameter = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flPoseParameter");
-	return (float*)((DWORD)this + 10100);
+	static auto m_flPoseParameter = GetOffset("m_flPoseParameter");
+	return (float*)((uintptr_t)this + 10100); // propal iz propov, hz, nado sig!
 }
 
 float& CBaseEntity::GetLowerBodyYaw() {
-	return *(float*)(DWORD(this) + 0x3A90);
+	static auto m_flLowerBodyYawTarget = GetOffset("m_flLowerBodyYawTarget")
+	return *(float*)(uintptr_t(this) + m_flLowerBodyYawTarget);
 }
 
 bool CBaseEntity::IsLocalPlayer()
@@ -159,111 +150,112 @@ bool CBaseEntity::IsLocalPlayer()
 }
 
 int CBaseEntity::GetTeam() {
-	static auto m_iTeamNum = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_iTeamNum");
+	static auto m_iTeamNum = GetOffset("m_iTeamNum");
 	return *(int*)(uintptr_t(this) + m_iTeamNum);
 }
+
 bool CBaseEntity::bHasHeavyArmor() {
-	static auto m_bHasHeavyArmor = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bHasHeavyArmor");
+	static auto m_bHasHeavyArmor = GetOffset("m_bHasHeavyArmor");
 	return *(bool*)(uintptr_t(this) + m_bHasHeavyArmor);
 }
 
 int& CBaseEntity::GetFlags() {
-	static auto m_fFlags = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_fFlags");
-	return *(int*)((DWORD)this + m_fFlags);
+	static auto m_fFlags = GetOffset("m_fFlags");
+	return *(int*)((uintptr_t)this + m_fFlags);
 }
 
 float& CBaseEntity::GetFlashMaxAlpha() {
-	static auto m_flFlashMaxAlpha = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flFlashMaxAlpha");
-	return *(float*)((DWORD)this + m_flFlashMaxAlpha);
+	static auto m_flFlashMaxAlpha = GetOffset("m_flFlashMaxAlpha");
+	return *(float*)((uintptr_t)this + m_flFlashMaxAlpha);
 }
 
 int CBaseEntity::GetMoney() {
-	static auto m_iAccount = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_iAccount");
+	static auto m_iAccount = GetOffset("m_iAccount");
 	return *(int*)(uintptr_t(this) + m_iAccount);
 }
 
 QAngle& CBaseEntity::GetEyeAngles() {
-	static auto m_angEyeAngles = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_angEyeAngles");
-	return *(QAngle*)(DWORD(this) + m_angEyeAngles);
+	static auto m_angEyeAngles = GetOffset("m_angEyeAngles");
+	return *(QAngle*)(uintptr_t(this) + m_angEyeAngles);
 }
 
 Vector& CBaseEntity::GetVelocity()
 {
-	static auto m_vecVelocity = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecVelocity[0]");
-	return *(Vector*)((DWORD)this + m_vecVelocity);
+	static auto m_vecVelocity = GetOffset("m_vecVelocity[0]");
+	return *(Vector*)((uintptr_t)this + m_vecVelocity);
 }
 
 int CBaseEntity::HitBoxSet() {
-	static auto m_nHitBoxSet = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_nHitboxSet");
+	static auto m_nHitBoxSet = GetOffset("m_nHitboxSet");
 	return *(int*)(uintptr_t(this) + m_nHitBoxSet);
 }
 
 int CBaseEntity::GetMoveType()
 {
-	static auto m_Movetype = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_nRenderMode") + 1;
+	static auto m_Movetype = GetOffset("m_nRenderMode") + 1;
 	return *(int*)(uintptr_t(this) + m_Movetype);
 }
 
 bool CBaseEntity::GetLifeState()
 {
-	static auto m_lifeState = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_lifeState");
+	static auto m_lifeState = GetOffset("m_lifeState");
 	return *(bool*)(uintptr_t(this) + m_lifeState);
 }
 
 int CBaseEntity::GetHealth()
 {
-	static auto m_iHealth = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_iHealth");
+	static auto m_iHealth = GetOffset("m_iHealth");
 	return *(int*)(uintptr_t(this) + m_iHealth);
 }
 
 bool CBaseEntity::IsAlive()
 {
-	return (this->GetHealth() > 0 && this->GetLifeState() == 0);
+	return (GetHealth() > 0 && GetLifeState() == 0);
 }
 
 bool CBaseEntity::IsImmune()
 {
-	static auto m_bGunGameImmunity = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bGunGameImmunity");
+	static auto m_bGunGameImmunity = GetOffset("m_bGunGameImmunity");
 	return *(bool*)(uintptr_t(this) + m_bGunGameImmunity);
 }
 
 int& CBaseEntity::GetTickBase()
 {
-	static auto m_nTickBase = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_nTickBase");
-	return *(int*)((DWORD)(this) + m_nTickBase);
+	static auto m_nTickBase = GetOffset("m_nTickBase");
+	return *(int*)((uintptr_t)(this) + m_nTickBase);
 }
 
 float CBaseEntity::GetSimulationTime() {
-	static auto m_flSimulationtime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flSimulationTime");
+	static auto m_flSimulationtime = GetOffset("m_flSimulationTime");
 	return *(float*)(uintptr_t(this) + m_flSimulationtime);
 }
 
 float CBaseEntity::GetOldSimulationTime() {
-	static auto m_flSimulationtime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flSimulationTime") + 0x4;
+	static auto m_flSimulationtime = GetOffset("m_flSimulationTime") + 0x4;
 	return *(float*)(uintptr_t(this) + m_flSimulationtime);
 }
 
 float CBaseEntity::GetAnimTime()
 {
-	static auto m_flAnimTime = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flAnimTime");
+	static auto m_flAnimTime = GetOffset("m_flAnimTime");
 	return *(float*)(uintptr_t(this) + m_flAnimTime);
 }
 
 Vector& CBaseEntity::GetOrigin()
 {
-	static auto m_vecOrigin = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecOrigin");
+	static auto m_vecOrigin = GetOffset("m_vecOrigin");
 	return *(Vector*)(uintptr_t(this) + m_vecOrigin);
 }
 
 Vector CBaseEntity::GetViewOffset()
 {
-	static auto m_vecViewOffset = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_vecViewOffset[0]");
+	static auto m_vecViewOffset = GetOffset("m_vecViewOffset[0]");
 	return *(Vector*)(uintptr_t(this) + m_vecViewOffset);
 }
 
 QAngle CBaseEntity::GetPunchAngles()
 {
-	static auto m_aimPunchAngle = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_aimPunchAngle");
+	static auto m_aimPunchAngle = GetOffset("m_aimPunchAngle");
 	return *(QAngle*)(uintptr_t(this) + m_aimPunchAngle);
 }
 
@@ -276,23 +268,23 @@ Vector CBaseEntity::GetEyePosition()
 
 int CBaseEntity::GetArmor()
 {
-	static auto m_ArmorValue = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_ArmorValue");
+	static auto m_ArmorValue = GetOffset("m_ArmorValue");
 	return *(int*)(uintptr_t(this) + m_ArmorValue);
 }
 
 int CBaseEntity::HeavyArmor() {
-	static auto m_bHasHeavyArmor = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bHasHeavyArmor");
+	static auto m_bHasHeavyArmor = GetOffset("m_bHasHeavyArmor");
 	return *(int*)(uintptr_t(this) + m_bHasHeavyArmor);
 }
 
 bool CBaseEntity::HasHelmet()
 {
-	static auto m_bHasHelmet = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_bHasHelmet");
+	static auto m_bHasHelmet = GetOffset("m_bHasHelmet");
 	return *(bool*)(uintptr_t(this) + m_bHasHelmet);
 }
 
 float CBaseEntity::NextAttack() {
-	static auto m_flNextAttack = g_Netvars.GetProp(this->GetClientClass()->pNetworkName, "m_flNextAttack");
+	static auto m_flNextAttack = GetOffset("m_flNextAttack");
 	return *(float*)((uintptr_t)this + m_flNextAttack);
 }
 

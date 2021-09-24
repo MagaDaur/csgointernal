@@ -61,7 +61,7 @@ public:
 
 	bool IsScoped();
 
-	void ClientAnimations(bool toggle);
+	bool& ClientAnimations();
 
 	void UpdateClientAnimation();
 
