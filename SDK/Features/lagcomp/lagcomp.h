@@ -57,7 +57,16 @@ struct LagRecord
 	bool IsValid()
 	{
 		static ConVar* sv_maxunlag = g_pCvar->FindVar("sv_maxunlag");
-		return abs(g_pGlobalVars->curtime - simtime) <= sv_maxunlag->GetFloat();
+
+		float latency = 0.f;
+
+		auto nci = g_pEngine->GetNetChannelInfo();
+		if (nci)
+		{
+			latency += nci->GetAvgLatency(FLOW_OUTGOING);
+		}
+
+		return (g_pGlobalVars->curtime - simtime - latency) <= sv_maxunlag->GetFloat();
 	}
 };
 

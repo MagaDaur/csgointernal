@@ -24,10 +24,37 @@ void CRageBot::OnPrediction(CUserCmd* cmd, bool* bSendPackets)
 	*bSendPackets = bFakeLagState;
 }
 
+void CRageBot::OnPostPrediction(bool* bSendPackets)
+{
+	static ConVar* sv_maxusrcmdprocessticks = g_pCvar->FindVar("sv_maxusrcmdprocessticks");
+
+	if ((pCmd->buttons & IN_ATTACK) && Exploits.bCharged)
+	{
+		Exploits.iShiftAmount = sv_maxusrcmdprocessticks->GetInt() - 2;
+		Exploits.lastcmd = *pCmd;
+		Exploits.flLastShiftTime = g_pGlobalVars->curtime;
+	}
+
+	if (Exploits.bShouldCharge && g_pGlobalVars->curtime - Exploits.flLastShiftTime > 0.5f)
+	{
+		pCmd->tick_count = INT_MAX;
+
+		if (Exploits.iChrageAmount++ >= sv_maxusrcmdprocessticks->GetInt() - 2)
+		{
+			Exploits.bCharged = true;
+			Exploits.bShouldCharge = false;
+			Exploits.iChrageAmount = 0;
+		}
+	}
+}
+
 void CRageBot::AutoShot()
 {
 	if (pWeapon->GetNextPrimaryAttack() > g_pGlobalVars->curtime)	pCmd->buttons &= ~IN_ATTACK;
-	else if (pCmd->buttons & IN_ATTACK) bFakeLagState = true;
+	else if (pCmd->buttons & IN_ATTACK)
+	{
+		bFakeLagState = true;
+	}
 }
 
 CBaseEntity* CRageBot::TargetSelection(int type)

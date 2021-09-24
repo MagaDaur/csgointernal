@@ -34,12 +34,13 @@ float& CBaseEntity::GetDuckAmount()
 
 bool& CBaseEntity::JiggleEnabled()
 {
-	static auto m_bJiggleBones = 0x2930; // find sig!!!
+	static auto m_bJiggleBones = *(uintptr_t*)(Utils::FindSignature("client.dll", "80 BF ? ? ? ? ? 0F 84 ? ? ? ? 8B 74 24 14") + 0x2);
 	return *(bool*)(uintptr_t(this) + m_bJiggleBones);
 }
 
 AnimationLayer* CBaseEntity::GetAnimLayers() {
-	return *(AnimationLayer**)(uintptr_t(this) + 0x2990); // find sig!!!
+	static auto offset = *(uintptr_t*)(Utils::FindSignature("client.dll", "8B 8E ? ? ? ? 83 C1 14 0F") + 0x2);
+	return *(AnimationLayer**)(uintptr_t(this) + offset); 
 }
 
 CBaseCombatWeapon* CBaseEntity::GetActiveWeapon() {
@@ -99,7 +100,8 @@ void CBaseEntity::SetModelIndex(int model)
 
 matrix3x4_t*& CBaseEntity::GetBoneMatrix()
 {
-	return *(matrix3x4_t**)(uintptr_t(this) + 0x26A8); // should find sig!!
+	static auto offset = *(uintptr_t*)(Utils::FindSignature("client.dll", "FF B6 ? ? ? ? 8B CE E8 ? ? ? ? 80 BE") + 0x2);
+	return *(matrix3x4_t**)(uintptr_t(this) + offset);
 }
 
 float CBaseEntity::SpawnTime() {
@@ -138,7 +140,7 @@ float* CBaseEntity::GetPoseParameters() {
 }
 
 float& CBaseEntity::GetLowerBodyYaw() {
-	static auto m_flLowerBodyYawTarget = GetOffset("m_flLowerBodyYawTarget")
+	static auto m_flLowerBodyYawTarget = GetOffset("m_flLowerBodyYawTarget");
 	return *(float*)(uintptr_t(this) + m_flLowerBodyYawTarget);
 }
 

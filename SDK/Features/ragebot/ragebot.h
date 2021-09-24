@@ -15,12 +15,14 @@ class CRageBot
 {
 public:
 	void OnPrediction(CUserCmd*, bool*);
+	void OnPostPrediction(bool*);
 
 	struct exploit_t
 	{
-		bool bCharged;
+		bool bCharged = true;
 		bool bShouldCharge;
-		float flChrageAmount;
+		int iChrageAmount;
+		float flLastShiftTime;
 
 		CUserCmd lastcmd;
 

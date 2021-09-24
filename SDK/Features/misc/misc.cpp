@@ -5,6 +5,7 @@
 #include "..\..\SDK/ICVar.h"
 #include "..\..\Settings.h"
 #include "..\..\SDK/IClientEntityList.h"
+#include "../ragebot/ragebot.h"
 #include <math.h>
 
 void CMisc::OnPrePrediction(CUserCmd* cmd, bool* bSendPackets)
@@ -34,7 +35,9 @@ void CMisc::Bhop()
 
 void CMisc::FakeLag()
 {
-	if(iChokedPackets <= g_Settings.FakeLag)
+	int limit = g_Settings.FakeLag;
+
+	if(iChokedPackets <= limit)
 	{
 		iChokedPackets++;
 		bFakelagState = false;

@@ -36,7 +36,7 @@ Hooks g_Hooks;
 NetvarTree g_Netvars;
 
 extern IMGUI_API LRESULT ImGui_ImplDX9_WndProcHandler(HWND, UINT msg, WPARAM wParam, LPARAM lParam);
-void WriteUsercmd(void* buf, CUserCmd* to, CUserCmd* from);
+void WriteUserCmd(void* buf, CUserCmd* to, CUserCmd* from);
 
 DoExtraBoneProcessingFn oDoExtraBoneProcessing;
 BuildTransformationsFn oBuildTransformations;
@@ -287,12 +287,15 @@ void __fastcall Hooks::PaintTraverse(IPanel* panel, int edx, unsigned int vguiPa
 bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_frametime, CUserCmd* cmd)
 {
 	static auto oCreateMove = g_Hooks.pClientModeHook->GetOriginal<CreateMove_t>(24);
-	bool ret = oCreateMove(thisptr, edx, sample_frametime, cmd);
+	bool ret = false;
+	bool* bSendPackets;
+
+	ret = oCreateMove(thisptr, edx, sample_frametime, cmd);
 
 	if (!cmd || !cmd->command_number) return ret;
 
 	uintptr_t* fptr; __asm mov fptr, ebp
-	bool* bSendPackets = (bool*)(*fptr - 0x1C);
+	bSendPackets = (bool*)(*fptr - 0x1C);
 
 	if (!bSendPackets) return ret;
 
@@ -301,6 +304,7 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 	g_Misc.OnPrePrediction(cmd, bSendPackets);
 
 	engine_prediction::RunEnginePred(cmd); {
+
 		g_LegitBot.OnPrediction(cmd);
 
 		g_RageBot.OnPrediction(cmd, bSendPackets);
@@ -308,6 +312,9 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 		g_Misc.OnPrediction();
 
 		g_AntiAim.OnPrediction(cmd, bSendPackets);
+
+		g_RageBot.OnPostPrediction(bSendPackets);
+
 	} engine_prediction::EndEnginePred();
 
 	return false;
@@ -316,19 +323,44 @@ bool __fastcall Hooks::CreateMove(IClientMode* thisptr, void* edx, float sample_
 bool __fastcall Hooks::hkdWriteUsercmdDeltaToBuffer(void* ecx, void* edx, int slot, bf_write* buf, int from, int to, bool isnewcommand)
 {
 	static auto oWriteUserCmdDeltaToBuffer = g_Hooks.pClientHook->GetOriginal <WriteUsercmdDeltaToBufferFn>(24);
-	
+	static ConVar* sv_maxusrcmdprocessticks = g_pCvar->FindVar("sv_maxusrcmdprocessticks");
+
+
 	if(from == -1)
 	{
+
+		if (g_RageBot.Exploits.iShiftAmount > 0 && g_RageBot.Exploits.bCharged)
+		{
+			g_pClientState->nChokedCommands += g_RageBot.Exploits.iShiftAmount;
+			
+			CUserCmd toCmd = g_RageBot.Exploits.lastcmd;
+			CUserCmd fromCmd;
+
+			for (int i = 0; i < g_RageBot.Exploits.iShiftAmount; i++)
+			{
+				WriteUserCmd(buf, &toCmd, &fromCmd);
+
+				Hooks::CreateMove(g_pClientMode, NULL, 0.f, &fromCmd);
+
+				fromCmd = toCmd;
+				toCmd.tick_count++;
+				toCmd.command_number++;
+			}
+
+			g_RageBot.Exploits.iShiftAmount = 0;
+			g_RageBot.Exploits.bCharged = false;
+			g_RageBot.Exploits.bShouldCharge = true;
+		}
 
 		int* pNumBackupCommands = (int*)(reinterpret_cast<uintptr_t>(buf) - 0x30);
 		int* pNumNewCommands = (int*)(reinterpret_cast<uintptr_t>(buf) - 0x2C);
 
-		*pNumNewCommands = std::clamp(g_pClientState->nChokedCommands + 1, 0, 17);
+		*pNumNewCommands = std::clamp(g_pClientState->nChokedCommands + 1, 0, sv_maxusrcmdprocessticks->GetInt());
 		*pNumBackupCommands = 0;
 
-		int nextcommandnr = g_pClientState->iLastOutgoingCommand + *pNumNewCommands + 1;
+		int nextcommandnr = g_pClientState->iLastOutgoingCommand + 1 + *pNumNewCommands;
 
-		for(int to = nextcommandnr - *pNumNewCommands; to <= nextcommandnr; ++to)
+		for(int to = g_pClientState->iLastOutgoingCommand + 1; to <= nextcommandnr; ++to)
 		{
 			bool isnewcmd = to >= nextcommandnr;
 
@@ -521,7 +553,7 @@ LRESULT Hooks::WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return CallWindowProcA(g_Hooks.pOriginalWNDProc, hWnd, uMsg, wParam, lParam);
 }
 
-void WriteUsercmd(void* buf, CUserCmd* to, CUserCmd* from)
+void WriteUserCmd(void* buf, CUserCmd* to, CUserCmd* from)
 {
 	using WriteUsercmd_t = void(__fastcall*) (bf_write*, CUserCmd*, CUserCmd*);
 	static WriteUsercmd_t WriteUsercmdF = (WriteUsercmd_t)Utils::FindSignature("client.dll", "55 8B EC 83 E4 F8 51 53 56 8B D9 8B 0D");

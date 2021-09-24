@@ -46,6 +46,8 @@ void CAntiAim::OnFrameStage(int curStage)
 	if (!animstate) return;
 	if (curStage == FRAME_RENDER_START)
 	{
+		if (animstate->m_iLastClientSideAnimationUpdateFramecount)
+			animstate->m_iLastClientSideAnimationUpdateFramecount--;
 		animstate->Update(angCurrent);
 		if (bFakeLagState)
 		{
