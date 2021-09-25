@@ -66,7 +66,7 @@ public:
 	static void InitIMGUI(IDirect3DDevice9 * pDevice);
 
 
-	static bool     __fastcall  CreateMove( IClientMode*, void*, float, CUserCmd* );
+	static bool     __fastcall  CreateMove( void*, void*, float, CUserCmd* );
 	static void     __fastcall  LockCursor( ISurface*, void* );
 	static HRESULT  __stdcall   Reset( IDirect3DDevice9Ex* pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters );
 	static void     __fastcall  DME( void*, void*, IMatRenderContext*, const DrawModelState_t&, const ModelRenderInfo_t&, matrix3x4_t* );
@@ -114,7 +114,7 @@ private:
 	typedef long(__stdcall  *Present_t)(IDirect3DDevice9Ex*, const RECT*, const RECT*, HWND, const RGNDATA*);
 	typedef void(__thiscall *SceneEnd_t)(void*);
 
-	typedef bool( __fastcall *CreateMove_t )(IClientMode*, void*, float, CUserCmd*);
+	typedef bool( __thiscall *CreateMove_t )(void*, float, CUserCmd*);
 	typedef void( __fastcall *LockCursor_t )(ISurface*, void*);
 	typedef void( __thiscall *DrawModelExecute_t )(void*, IMatRenderContext*, const DrawModelState_t&, const ModelRenderInfo_t&, matrix3x4_t*);
 	typedef void( __thiscall *BeginFrame_t )(void*, float);
