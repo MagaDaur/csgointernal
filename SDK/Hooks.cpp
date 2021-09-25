@@ -287,15 +287,13 @@ void __fastcall Hooks::PaintTraverse(IPanel* panel, int edx, unsigned int vguiPa
 bool __fastcall Hooks::CreateMove(void* ecx, void* edx, float sample_frametime, CUserCmd* cmd)
 {
 	static auto oCreateMove = g_Hooks.pClientModeHook->GetOriginal<CreateMove_t>(24);
-	bool ret = false;
-	bool* bSendPackets;
 
-	ret = oCreateMove(ecx, sample_frametime, cmd);
+	bool ret = oCreateMove(ecx, sample_frametime, cmd);
 
 	if (!cmd || !cmd->command_number) return ret;
 
 	uintptr_t* fptr; __asm mov fptr, ebp
-	bSendPackets = (bool*)(*fptr - 0x1C);
+	bool* bSendPackets = (bool*)(*fptr - 0x1C);
 
 	if (!bSendPackets) return ret;
 
